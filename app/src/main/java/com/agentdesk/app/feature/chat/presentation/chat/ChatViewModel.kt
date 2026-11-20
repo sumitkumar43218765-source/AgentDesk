@@ -1,14 +1,12 @@
 package com.agentdesk.app.feature.chat.presentation.chat
 
 import androidx.lifecycle.viewModelScope
+import com.agentdesk.app.core.common.AppResult
 import com.agentdesk.app.core.mvi.MviViewModel
-import com.agentdesk.app.feature.ai.domain.model.ContentBlock
 import com.agentdesk.app.feature.ai.domain.model.LlmEvent
 import com.agentdesk.app.feature.ai.domain.model.Role
 import com.agentdesk.app.feature.ai.domain.usecase.ListModelsUseCase
 import com.agentdesk.app.feature.chat.data.local.StreamingPersister
-import com.agentdesk.app.feature.chat.domain.model.ChatMessage
-import com.agentdesk.app.feature.chat.domain.model.MessageStatus
 import com.agentdesk.app.feature.chat.domain.repository.ChatRepository
 import com.agentdesk.app.feature.chat.domain.usecase.RecoverInterruptedUseCase
 import com.agentdesk.app.feature.chat.domain.usecase.RetryLastUseCase
@@ -65,8 +63,8 @@ class ChatViewModel @Inject constructor(
                     .launchIn(viewModelScope)
 
                 val modelsRes = listModelsUseCase(conv.providerId)
-                modelsRes.onSuccess { models ->
-                    setState { copy(availableModels = models) }
+                if (modelsRes is AppResult.Success) {
+                    setState { copy(availableModels = modelsRes.value) }
                 }
             }
         }
