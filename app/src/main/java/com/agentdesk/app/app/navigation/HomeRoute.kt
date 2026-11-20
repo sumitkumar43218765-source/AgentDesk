@@ -7,9 +7,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Chat
-import androidx.compose.material.icons.filled.Key
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -26,7 +23,6 @@ import androidx.navigation.compose.composable
 import com.agentdesk.app.R
 import com.agentdesk.app.core.ui.components.AppScaffold
 import com.agentdesk.app.core.ui.components.AppTopBar
-import com.agentdesk.app.core.ui.components.SettingsRow
 import com.agentdesk.app.core.ui.components.StatusChip
 import com.agentdesk.app.core.ui.components.StatusLevel
 import javax.inject.Inject
@@ -38,7 +34,8 @@ class HomeNavGraphRegistrar @Inject constructor() : NavGraphRegistrar {
         navGraphBuilder.composable<Routes.Home> {
             HomeScreen(
                 onNavigateToChat = { navController.navigate(Routes.ConversationList) },
-                onNavigateToProviders = { navController.navigate(Routes.ProviderList) }
+                onNavigateToProviders = { navController.navigate(Routes.ProviderList) },
+                onNavigateToTerminal = { navController.navigate(Routes.Terminal) }
             )
         }
     }
@@ -47,7 +44,8 @@ class HomeNavGraphRegistrar @Inject constructor() : NavGraphRegistrar {
 @Composable
 fun HomeScreen(
     onNavigateToChat: () -> Unit = {},
-    onNavigateToProviders: () -> Unit = {}
+    onNavigateToProviders: () -> Unit = {},
+    onNavigateToTerminal: () -> Unit = {}
 ) {
     AppScaffold(
         topBar = {
@@ -87,6 +85,15 @@ fun HomeScreen(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text("Open Chat")
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            OutlinedButton(
+                onClick = onNavigateToTerminal,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Open Terminal")
             }
 
             Spacer(modifier = Modifier.height(12.dp))
