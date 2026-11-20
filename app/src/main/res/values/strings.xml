@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">AgentDesk</string>
+    <string name="home_title">AgentDesk</string>
+    <string name="home_subtitle">On-device autonomous AI agent &amp; development environment</string>
+    <string name="home_status_ready">Foundation Initialized</string>
+    <string name="retry">Retry</string>
+    <string name="loading">Loading…</string>
+    <string name="empty_content">No content available</string>
+    <string name="confirm">Confirm</string>
+    <string name="cancel">Cancel</string>
+    <string name="ok">OK</string>
+    <string name="settings">Settings</string>
+</resources>
