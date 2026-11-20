@@ -10,7 +10,7 @@ import android.net.NetworkCapabilities
 import android.net.NetworkRequest
 import android.os.IBinder
 import android.os.PowerManager
-import com.agentdesk.app.core.common.AppLogger
+import com.agentdesk.app.core.logging.AppLogger
 import com.agentdesk.app.core.common.DispatcherProvider
 import com.agentdesk.app.feature.setup.domain.model.Phase
 import com.agentdesk.app.feature.setup.domain.model.ToolInstallStatus
