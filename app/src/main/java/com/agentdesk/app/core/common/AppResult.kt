@@ -19,24 +19,24 @@ sealed interface AppResult<out T> {
         is Success -> null
         is Failure -> error
     }
+}
 
-    inline fun <R> map(transform: (T) -> R): AppResult<R> = when (this) {
-        is Success -> Success(transform(value))
-        is Failure -> this
-    }
+inline fun <T, R> AppResult<T>.map(transform: (T) -> R): AppResult<R> = when (this) {
+    is AppResult.Success -> AppResult.Success(transform(value))
+    is AppResult.Failure -> this
+}
 
-    inline fun <R> flatMap(transform: (T) -> AppResult<R>): AppResult<R> = when (this) {
-        is Success -> transform(value)
-        is Failure -> this
-    }
+inline fun <T, R> AppResult<T>.flatMap(transform: (T) -> AppResult<R>): AppResult<R> = when (this) {
+    is AppResult.Success -> transform(value)
+    is AppResult.Failure -> this
+}
 
-    inline fun onSuccess(action: (T) -> Unit): AppResult<T> {
-        if (this is Success) action(value)
-        return this
-    }
+inline fun <T> AppResult<T>.onSuccess(action: (T) -> Unit): AppResult<T> {
+    if (this is AppResult.Success) action(value)
+    return this
+}
 
-    inline fun onFailure(action: (AppError) -> Unit): AppResult<T> {
-        if (this is Failure) action(error)
-        return this
-    }
+inline fun <T> AppResult<T>.onFailure(action: (AppError) -> Unit): AppResult<T> {
+    if (this is AppResult.Failure) action(error)
+    return this
 }
