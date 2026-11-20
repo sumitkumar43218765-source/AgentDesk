@@ -4,9 +4,15 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Chat
+import androidx.compose.material.icons.filled.Key
+import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -20,6 +26,7 @@ import androidx.navigation.compose.composable
 import com.agentdesk.app.R
 import com.agentdesk.app.core.ui.components.AppScaffold
 import com.agentdesk.app.core.ui.components.AppTopBar
+import com.agentdesk.app.core.ui.components.SettingsRow
 import com.agentdesk.app.core.ui.components.StatusChip
 import com.agentdesk.app.core.ui.components.StatusLevel
 import javax.inject.Inject
@@ -29,13 +36,19 @@ import javax.inject.Singleton
 class HomeNavGraphRegistrar @Inject constructor() : NavGraphRegistrar {
     override fun register(navGraphBuilder: NavGraphBuilder, navController: NavHostController) {
         navGraphBuilder.composable<Routes.Home> {
-            HomeScreen()
+            HomeScreen(
+                onNavigateToChat = { navController.navigate(Routes.ConversationList) },
+                onNavigateToProviders = { navController.navigate(Routes.ProviderList) }
+            )
         }
     }
 }
 
 @Composable
-fun HomeScreen() {
+fun HomeScreen(
+    onNavigateToChat: () -> Unit = {},
+    onNavigateToProviders: () -> Unit = {}
+) {
     AppScaffold(
         topBar = {
             AppTopBar(title = stringResource(R.string.home_title))
@@ -66,6 +79,24 @@ fun HomeScreen() {
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center
             )
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            Button(
+                onClick = onNavigateToChat,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Open Chat")
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            OutlinedButton(
+                onClick = onNavigateToProviders,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Configure AI Providers")
+            }
         }
     }
 }

@@ -8,7 +8,16 @@ sealed interface Routes {
     data object Home : Routes
 
     @Serializable
-    data object Chat : Routes
+    data object ConversationList : Routes
+
+    @Serializable
+    data class Chat(val id: String) : Routes
+
+    @Serializable
+    data object ProviderList : Routes
+
+    @Serializable
+    data class ProviderEdit(val id: String? = null) : Routes
 
     @Serializable
     data object Terminal : Routes

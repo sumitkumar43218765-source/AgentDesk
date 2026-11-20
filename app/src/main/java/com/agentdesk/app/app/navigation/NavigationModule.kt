@@ -1,5 +1,7 @@
 package com.agentdesk.app.app.navigation
 
+import com.agentdesk.app.feature.ai.presentation.AiNavGraphRegistrar
+import com.agentdesk.app.feature.chat.presentation.ChatNavGraphRegistrar
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -13,4 +15,12 @@ abstract class NavigationModule {
     @Binds
     @IntoSet
     abstract fun bindHomeNavGraphRegistrar(registrar: HomeNavGraphRegistrar): NavGraphRegistrar
+
+    @Binds
+    @IntoSet
+    abstract fun bindChatNavGraphRegistrar(registrar: ChatNavGraphRegistrar): NavGraphRegistrar
+
+    @Binds
+    @IntoSet
+    abstract fun bindAiNavGraphRegistrar(registrar: AiNavGraphRegistrar): NavGraphRegistrar
 }
