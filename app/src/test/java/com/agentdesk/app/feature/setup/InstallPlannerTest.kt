@@ -57,7 +57,7 @@ class InstallPlannerTest {
         )
 
         assertTrue(result is AppResult.Success)
-        val plan = (result as AppResult.Success).data
+        val plan = (result as AppResult.Success).value
         val ids = plan.toolsToInstall.map { it.id }
 
         // Must install rootfs before clang before cmake
@@ -95,7 +95,7 @@ class InstallPlannerTest {
             availableDiskSpaceMb = 3000L
         )
         assertTrue(resultEnough is AppResult.Success)
-        val planEnough = (resultEnough as AppResult.Success).data
+        val planEnough = (resultEnough as AppResult.Success).value
         assertTrue(planEnough.hasEnoughSpace)
         assertEquals(0L, planEnough.spaceShortfallMb)
 
@@ -105,7 +105,7 @@ class InstallPlannerTest {
             availableDiskSpaceMb = 1500L
         )
         assertTrue(resultShortfall is AppResult.Success)
-        val planShortfall = (resultShortfall as AppResult.Success).data
+        val planShortfall = (resultShortfall as AppResult.Success).value
         assertFalse(planShortfall.hasEnoughSpace)
         assertEquals(500L, planShortfall.spaceShortfallMb)
     }

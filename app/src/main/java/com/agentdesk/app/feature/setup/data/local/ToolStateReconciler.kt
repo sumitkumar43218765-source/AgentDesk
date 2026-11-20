@@ -26,7 +26,7 @@ class ToolStateReconciler @Inject constructor(
         val catalogResult = catalogRepository.loadCatalog()
         if (catalogResult !is AppResult.Success) return
 
-        val tools = catalogResult.data
+        val tools = catalogResult.value
         val dbStates = stateRepository.getAllStates().associateBy { it.toolId }
 
         for (tool in tools) {
@@ -34,18 +34,17 @@ class ToolStateReconciler @Inject constructor(
             val currentState = dbStates[tool.id]
 
             if (isDone) {
-                // Verify with quick check
                 val request = ShellRequest(
-                    id = "reconcile_${tool.id}",
                     command = tool.verify,
-                    environment = tool.environment,
-                    workingDir = if (tool.environment == ShellEnvironment.TERMUX_NATIVE) {
+                    cwd = if (tool.environment == ShellEnvironment.TERMUX_NATIVE) {
                         pathProvider.termuxHome.absolutePath
                     } else {
                         pathProvider.rootfsHome.absolutePath
-                    }
+                    },
+                    environment = tool.environment,
+                    executionId = "reconcile_${tool.id}"
                 )
-                val verifyResult = shellBackend.execute(request)
+                val verifyResult = shellBackend.runToCompletion(request)
                 if (verifyResult.exitCode == 0) {
                     stateRepository.updateToolState(
                         ToolState(
@@ -56,7 +55,6 @@ class ToolStateReconciler @Inject constructor(
                         )
                     )
                 } else {
-                    // Marker exists but verify failed -> marked as FAILED
                     stateRepository.updateToolState(
                         ToolState(
                             toolId = tool.id,

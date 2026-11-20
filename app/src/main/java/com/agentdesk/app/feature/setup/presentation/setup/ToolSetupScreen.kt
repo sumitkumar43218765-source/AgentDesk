@@ -1,14 +1,11 @@
 package com.agentdesk.app.feature.setup.presentation.setup
 
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -41,8 +38,7 @@ fun ToolSetupScreen(
     Scaffold(
         topBar = {
             AppTopBar(
-                title = "Tool Setup",
-                subtitle = "Select tools for on-device development"
+                title = "Tool Setup"
             )
         },
         bottomBar = {

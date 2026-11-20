@@ -19,7 +19,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.agentdesk.app.core.ui.components.StatusChip
-import com.agentdesk.app.core.ui.components.StatusType
+import com.agentdesk.app.core.ui.components.StatusLevel
 import com.agentdesk.app.core.ui.theme.Spacing
 import com.agentdesk.app.feature.setup.domain.model.CheckResult
 
@@ -79,8 +79,8 @@ fun HealthCheckCard(
                             modifier = Modifier.weight(1f)
                         )
                         when (res) {
-                            is CheckResult.Pass -> StatusChip("PASS", StatusType.SUCCESS)
-                            is CheckResult.Fail -> StatusChip("FAIL", StatusType.ERROR)
+                            is CheckResult.Pass -> StatusChip("PASS", StatusLevel.SUCCESS)
+                            is CheckResult.Fail -> StatusChip("FAIL", StatusLevel.ERROR)
                         }
                     }
                 }

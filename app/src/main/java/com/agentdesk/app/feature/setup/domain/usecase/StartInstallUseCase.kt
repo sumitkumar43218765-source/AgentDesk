@@ -26,8 +26,7 @@ class StartInstallUseCase @Inject constructor(
     suspend operator fun invoke(plan: InstallPlan): AppResult<Unit> {
         if (!plan.hasEnoughSpace) {
             return AppResult.Failure(
-                AppError.Validation(
-                    field = "diskSpace",
+                AppError.Storage(
                     message = "Insufficient disk space. Shortfall: ${plan.spaceShortfallMb} MB"
                 )
             )

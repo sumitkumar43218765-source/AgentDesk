@@ -15,7 +15,6 @@ class InstallPlanner @Inject constructor() {
     ): AppResult<InstallPlan> {
         val toolMap = allTools.associateBy { it.id }
 
-        // Always include required tools and user selections
         val targets = mutableSetOf<String>()
         for (tool in allTools) {
             if (tool.required || selectedToolIds.contains(tool.id)) {
@@ -23,7 +22,6 @@ class InstallPlanner @Inject constructor() {
             }
         }
 
-        // Resolve dependencies transitively
         val resolvedIds = mutableSetOf<String>()
         val visiting = mutableSetOf<String>()
         val orderedList = mutableListOf<ToolDefinition>()
@@ -31,7 +29,7 @@ class InstallPlanner @Inject constructor() {
         fun visit(toolId: String): AppResult<Unit> {
             if (visiting.contains(toolId)) {
                 return AppResult.Failure(
-                    AppError.Internal(
+                    AppError.Unknown(
                         message = "Circular dependency detected involving tool: $toolId"
                     )
                 )
@@ -64,7 +62,6 @@ class InstallPlanner @Inject constructor() {
         }
 
         val totalDownloadMb = orderedList.sumOf { it.sizeEstimateMb }
-        // Required space = total * 1.5 + 500 MB
         val requiredDiskSpaceMb = (totalDownloadMb * 1.5).toLong() + 500L
         val hasEnoughSpace = availableDiskSpaceMb >= requiredDiskSpaceMb
         val shortfall = if (hasEnoughSpace) 0L else (requiredDiskSpaceMb - availableDiskSpaceMb)

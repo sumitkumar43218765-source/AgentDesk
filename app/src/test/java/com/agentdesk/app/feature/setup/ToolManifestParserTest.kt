@@ -42,7 +42,7 @@ class ToolManifestParserTest {
 
         val result = parser.parse(json)
         assertTrue(result is AppResult.Success)
-        val tools = (result as AppResult.Success).data
+        val tools = (result as AppResult.Success).value
         assertEquals(1, tools.size)
         val tool = tools.first()
         assertEquals("jdk-17", tool.id)

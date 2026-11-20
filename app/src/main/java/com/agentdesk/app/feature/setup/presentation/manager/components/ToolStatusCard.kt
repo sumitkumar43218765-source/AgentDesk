@@ -17,9 +17,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import com.agentdesk.app.core.ui.components.StatusChip
-import com.agentdesk.app.core.ui.components.StatusType
+import com.agentdesk.app.core.ui.components.StatusLevel
 import com.agentdesk.app.core.ui.theme.Spacing
 import com.agentdesk.app.feature.setup.domain.model.ToolDefinition
 import com.agentdesk.app.feature.setup.domain.model.ToolInstallStatus
@@ -58,16 +57,16 @@ fun ToolStatusCard(
                     modifier = Modifier.weight(1f)
                 )
                 if (tool.required) {
-                    StatusChip(text = "Required", type = StatusType.INFO)
+                    StatusChip(text = "Required", level = StatusLevel.INFO)
                     Spacer(modifier = Modifier.width(Spacing.extraSmall))
                 }
                 StatusChip(
                     text = state?.status?.name ?: "NOT INSTALLED",
-                    type = when (state?.status) {
-                        ToolInstallStatus.INSTALLED -> StatusType.SUCCESS
-                        ToolInstallStatus.INSTALLING -> StatusType.WARNING
-                        ToolInstallStatus.FAILED -> StatusType.ERROR
-                        else -> StatusType.NEUTRAL
+                    level = when (state?.status) {
+                        ToolInstallStatus.INSTALLED -> StatusLevel.SUCCESS
+                        ToolInstallStatus.INSTALLING -> StatusLevel.WARNING
+                        ToolInstallStatus.FAILED -> StatusLevel.ERROR
+                        else -> StatusLevel.INFO
                     }
                 )
             }

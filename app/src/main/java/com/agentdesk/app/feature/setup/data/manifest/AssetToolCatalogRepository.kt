@@ -37,13 +37,13 @@ class AssetToolCatalogRepository @Inject constructor(
             }
             val result = parser.parse(content)
             if (result is AppResult.Success) {
-                cachedList = result.data
-                _catalogFlow.value = result.data
+                cachedList = result.value
+                _catalogFlow.value = result.value
             }
             result
         } catch (e: Exception) {
             AppResult.Failure(
-                AppError.Internal(
+                AppError.Storage(
                     cause = e,
                     message = "Failed to read tool_manifest.json from assets: ${e.message}"
                 )

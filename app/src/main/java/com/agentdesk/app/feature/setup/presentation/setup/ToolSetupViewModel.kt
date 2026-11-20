@@ -52,8 +52,8 @@ class ToolSetupViewModel @Inject constructor(
             _uiState.update { it.copy(isLoading = true, error = null) }
             val result = loadCatalogUseCase()
             if (result is AppResult.Success) {
-                val tools = result.data
-                val initialSelected = tools.filter { it.required }.map { it.id }.toSet()
+                val tools: List<ToolDefinition> = result.value
+                val initialSelected: Set<String> = tools.filter { it.required }.map { it.id }.toSet()
                 _uiState.update { it.copy(tools = tools, selectedIds = initialSelected, isLoading = false) }
                 updatePlan(initialSelected, tools)
             } else if (result is AppResult.Failure) {
@@ -65,11 +65,10 @@ class ToolSetupViewModel @Inject constructor(
     fun toggleTool(toolId: String) {
         val currentState = _uiState.value
         val tool = currentState.tools.find { it.id == toolId } ?: return
-        if (tool.required) return // Cannot uncheck required tools
+        if (tool.required) return
 
         val selected = currentState.selectedIds.toMutableSet()
         if (selected.contains(toolId)) {
-            // Deselect tool and anything that depends on it
             val toRemove = mutableSetOf(toolId)
             var changed = true
             while (changed) {
@@ -83,7 +82,6 @@ class ToolSetupViewModel @Inject constructor(
             }
             selected.removeAll(toRemove)
         } else {
-            // Select tool and all its dependencies
             val toAdd = mutableSetOf(toolId)
             var changed = true
             while (changed) {
@@ -108,7 +106,7 @@ class ToolSetupViewModel @Inject constructor(
     private suspend fun updatePlan(selected: Set<String>, tools: List<ToolDefinition>) {
         val planResult = planInstallUseCase(selected)
         if (planResult is AppResult.Success) {
-            _uiState.update { it.copy(plan = planResult.data) }
+            _uiState.update { it.copy(plan = planResult.value) }
         }
     }
 

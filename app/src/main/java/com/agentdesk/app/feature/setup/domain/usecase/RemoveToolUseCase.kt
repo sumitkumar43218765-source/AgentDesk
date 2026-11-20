@@ -15,12 +15,11 @@ class RemoveToolUseCase @Inject constructor(
 ) {
     suspend operator fun invoke(toolId: String): AppResult<Unit> {
         val tool = catalogRepository.getTool(toolId)
-            ?: return AppResult.Failure(AppError.NotFound("Tool", toolId))
+            ?: return AppResult.Failure(AppError.Unknown("Tool not found: $toolId"))
 
         if (tool.required) {
             return AppResult.Failure(
-                AppError.Validation(
-                    field = "toolId",
+                AppError.Unknown(
                     message = "Required tools cannot be removed, only repaired."
                 )
             )

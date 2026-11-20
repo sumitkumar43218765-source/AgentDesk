@@ -18,12 +18,12 @@ class PlanInstallUseCase @Inject constructor(
     suspend operator fun invoke(selectedToolIds: Set<String>): AppResult<InstallPlan> {
         val catalogResult = catalogRepository.loadCatalog()
         if (catalogResult !is AppResult.Success) {
-            return AppResult.Failure(AppError.Internal(message = "Failed to load catalog for planning"))
+            return AppResult.Failure(AppError.Storage(message = "Failed to load catalog for planning"))
         }
 
         val stat = StatFs(context.filesDir.absolutePath)
         val availableMb = (stat.availableBlocksLong * stat.blockSizeLong) / (1024 * 1024)
 
-        return planner.plan(catalogResult.data, selectedToolIds, availableMb)
+        return planner.plan(catalogResult.value, selectedToolIds, availableMb)
     }
 }

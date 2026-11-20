@@ -10,8 +10,8 @@ import android.net.NetworkCapabilities
 import android.net.NetworkRequest
 import android.os.IBinder
 import android.os.PowerManager
-import com.agentdesk.app.core.logging.AppLogger
 import com.agentdesk.app.core.common.DispatcherProvider
+import com.agentdesk.app.core.logging.AppLogger
 import com.agentdesk.app.feature.setup.domain.model.Phase
 import com.agentdesk.app.feature.setup.domain.model.ToolInstallStatus
 import com.agentdesk.app.feature.setup.domain.repository.ToolStateRepository
@@ -98,10 +98,9 @@ class SetupInstallService : Service() {
     }
 
     private suspend fun runInstallation() {
-        wakeLock?.acquire(30 * 60 * 1000L) // 30 min max
+        wakeLock?.acquire(30 * 60 * 1000L)
         _currentPhase.value = Phase.INSTALLING
 
-        // Start observing status.jsonl
         val tailJob = serviceScope.launch(dispatchers.io) {
             statusTailer.tailEvents().collect { event ->
                 handleStatusEvent(event.tool, event.event, event.pct, event.msg)
@@ -111,7 +110,7 @@ class SetupInstallService : Service() {
         try {
             val scriptFile = File(pathProvider.setupStateDir, "run_install.sh")
             if (!scriptFile.exists()) {
-                logger.error("Install script not found: ${scriptFile.absolutePath}")
+                logger.e("SetupInstallService", "Install script not found: ${scriptFile.absolutePath}")
                 _currentPhase.value = Phase.FAILED
                 stopSelf()
                 return
@@ -120,17 +119,17 @@ class SetupInstallService : Service() {
             scriptFile.setExecutable(true, false)
 
             val request = ShellRequest(
-                id = "setup_installer",
                 command = "bash \"${scriptFile.absolutePath}\"",
-                environment = ShellEnvironment.TERMUX_NATIVE,
-                workingDir = pathProvider.termuxHome.absolutePath,
-                envVars = mapOf(
+                cwd = pathProvider.termuxHome.absolutePath,
+                env = mapOf(
                     "AGENTDESK_HOME" to pathProvider.termuxHome.absolutePath,
                     "AGENTDESK_ROOTFS" to pathProvider.rootfsDir.absolutePath
-                )
+                ),
+                environment = ShellEnvironment.TERMUX_NATIVE,
+                executionId = "setup_installer"
             )
 
-            val result = shellBackend.execute(request)
+            val result = shellBackend.runToCompletion(request)
             if (result.exitCode == 0) {
                 _currentPhase.value = Phase.DONE
                 _overallPct.value = 100
@@ -140,7 +139,7 @@ class SetupInstallService : Service() {
                 updateNotification("Installation Failed", "Exit code: ${result.exitCode}", 0)
             }
         } catch (e: Exception) {
-            logger.error("Exception during installation: ${e.message}", e)
+            logger.e("SetupInstallService", "Exception during installation: ${e.message}", e)
             _currentPhase.value = Phase.FAILED
         } finally {
             tailJob.cancel()
@@ -183,7 +182,7 @@ class SetupInstallService : Service() {
     }
 
     private fun cancelInstallation() {
-        logger.info("Installation cancelled by user")
+        logger.i("SetupInstallService", "Installation cancelled by user")
         serviceScope.cancel()
         _currentPhase.value = Phase.FAILED
         if (wakeLock?.isHeld == true) {

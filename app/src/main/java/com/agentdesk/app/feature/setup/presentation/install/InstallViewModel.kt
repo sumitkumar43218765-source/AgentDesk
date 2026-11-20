@@ -8,6 +8,7 @@ import androidx.lifecycle.viewModelScope
 import com.agentdesk.app.core.common.AppResult
 import com.agentdesk.app.feature.setup.domain.model.InstallProgress
 import com.agentdesk.app.feature.setup.domain.model.Phase
+import com.agentdesk.app.feature.setup.domain.model.ToolDefinition
 import com.agentdesk.app.feature.setup.domain.model.ToolInstallStatus
 import com.agentdesk.app.feature.setup.domain.repository.ToolCatalogRepository
 import com.agentdesk.app.feature.setup.domain.repository.ToolStateRepository
@@ -65,7 +66,6 @@ class InstallViewModel @Inject constructor(
 
                 _uiState.update { it.copy(progress = progress, canSkip = canSkip) }
 
-                // Check if all required tools are done
                 checkRequiredComplete(progress)
             }
         }
@@ -76,7 +76,8 @@ class InstallViewModel @Inject constructor(
 
         val catalogResult = catalogRepository.loadCatalog()
         if (catalogResult is AppResult.Success) {
-            val requiredIds = catalogResult.data.filter { it.required }.map { it.id }.toSet()
+            val tools: List<ToolDefinition> = catalogResult.value
+            val requiredIds: Set<String> = tools.filter { it.required }.map { it.id }.toSet()
             val toolStatusMap = progress.tools.associate { it.toolId to it.status }
             val allRequiredInstalled = requiredIds.all { id ->
                 toolStatusMap[id] == ToolInstallStatus.INSTALLED

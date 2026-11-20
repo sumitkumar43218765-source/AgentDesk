@@ -19,7 +19,7 @@ class InstallScriptGenerator @Inject constructor(
         script.appendLine("#!/bin/bash")
         script.appendLine("set -e")
         script.appendLine("STATUS_FILE=\"$statusFilePath\"")
-        script.appendLine("mkdir -p \"$(dirname \"$STATUS_FILE\")\"")
+        script.appendLine("mkdir -p \"\$(dirname \"\$STATUS_FILE\")\"")
         script.appendLine()
         script.appendLine("log_event() {")
         script.appendLine("    local tool=\"$1\"")

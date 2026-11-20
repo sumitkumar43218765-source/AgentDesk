@@ -1,7 +1,9 @@
 package com.agentdesk.app.feature.setup.data.check
 
+import com.agentdesk.app.core.common.AppResult
 import com.agentdesk.app.feature.setup.domain.PostInstallCheck
 import com.agentdesk.app.feature.setup.domain.model.CheckResult
+import com.agentdesk.app.feature.setup.domain.model.ToolInstallStatus
 import com.agentdesk.app.feature.setup.domain.repository.ToolCatalogRepository
 import com.agentdesk.app.feature.setup.domain.repository.ToolStateRepository
 import com.agentdesk.app.feature.terminal.domain.PathProvider
@@ -24,8 +26,8 @@ class ToolVerifyCheck @Inject constructor(
 
     override suspend fun run(): CheckResult {
         val catalog = catalogRepository.loadCatalog()
-        val tools = if (catalog is com.agentdesk.app.core.common.AppResult.Success) {
-            catalog.data
+        val tools = if (catalog is AppResult.Success) {
+            catalog.value
         } else {
             return CheckResult.Fail("Could not load tool catalog")
         }
@@ -35,21 +37,21 @@ class ToolVerifyCheck @Inject constructor(
 
         for (tool in tools) {
             val state = states[tool.id]
-            val shouldVerify = tool.required || state?.status == com.agentdesk.app.feature.setup.domain.model.ToolInstallStatus.INSTALLED
+            val shouldVerify = tool.required || state?.status == ToolInstallStatus.INSTALLED
 
             if (shouldVerify) {
                 val request = ShellRequest(
-                    id = "verify_${tool.id}",
                     command = tool.verify,
-                    environment = tool.environment,
-                    workingDir = if (tool.environment == ShellEnvironment.TERMUX_NATIVE) {
+                    cwd = if (tool.environment == ShellEnvironment.TERMUX_NATIVE) {
                         pathProvider.termuxHome.absolutePath
                     } else {
                         pathProvider.rootfsHome.absolutePath
-                    }
+                    },
+                    environment = tool.environment,
+                    executionId = "verify_${tool.id}"
                 )
 
-                val result = shellBackend.execute(request)
+                val result = shellBackend.runToCompletion(request)
                 if (result.exitCode != 0) {
                     failures.add("${tool.name} (${tool.id}): verification command failed (exit code ${result.exitCode})")
                 }

@@ -17,7 +17,7 @@ class RetryToolUseCase @Inject constructor(
         if (planResult is AppResult.Failure) {
             return planResult
         }
-        val plan = (planResult as AppResult.Success).data
+        val plan = (planResult as AppResult.Success).value
         return startInstallUseCase(plan)
     }
 }

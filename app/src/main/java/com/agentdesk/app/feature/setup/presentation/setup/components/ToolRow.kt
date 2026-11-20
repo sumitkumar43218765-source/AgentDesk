@@ -14,7 +14,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.agentdesk.app.core.ui.components.StatusChip
-import com.agentdesk.app.core.ui.components.StatusType
+import com.agentdesk.app.core.ui.components.StatusLevel
 import com.agentdesk.app.core.ui.theme.Spacing
 import com.agentdesk.app.feature.setup.domain.model.ToolDefinition
 
@@ -47,7 +47,7 @@ fun ToolRow(
                 )
                 if (tool.required) {
                     Spacer(modifier = Modifier.width(Spacing.small))
-                    StatusChip(text = "Required", type = StatusType.INFO)
+                    StatusChip(text = "Required", level = StatusLevel.INFO)
                 }
             }
             Text(

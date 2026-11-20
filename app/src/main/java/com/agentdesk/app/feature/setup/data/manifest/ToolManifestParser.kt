@@ -24,8 +24,7 @@ class ToolManifestParser @Inject constructor() {
             val manifest = json.decodeFromString<ToolManifestDto>(jsonContent)
             if (manifest.schemaVersion != 1) {
                 return AppResult.Failure(
-                    AppError.Validation(
-                        field = "schemaVersion",
+                    AppError.Unknown(
                         message = "Unsupported manifest schemaVersion: ${manifest.schemaVersion}"
                     )
                 )
@@ -65,7 +64,7 @@ class ToolManifestParser @Inject constructor() {
             AppResult.Success(tools)
         } catch (e: Exception) {
             AppResult.Failure(
-                AppError.Internal(
+                AppError.Unknown(
                     cause = e,
                     message = "Failed to parse tool manifest: ${e.message}"
                 )
