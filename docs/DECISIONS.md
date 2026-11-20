@@ -18,3 +18,8 @@
 - **Decision:** Implemented `CryptoBox` using standard Android Keystore AES-GCM (`KeyGenParameterSpec`, 256-bit AES, GCM NoPadding) storing IV (12 bytes) + ciphertext, rather than the deprecated `androidx.security.crypto.EncryptedSharedPreferences`.
 - **Reason:** Avoids known crashes and deprecation issues in Jetpack Security crypto library on various OEM ROMs, while fulfilling `SecretStore` contract and backup exclusion requirements.
 - **Date:** 2026-11-20
+
+## D005: Multiplatform kotlinx.serialization + JSON Testing Dependency
+- **Decision:** Utilized `kotlinx.serialization.json` across all data models and network DTOs, and added standard `org.json:json:20240303` to `testImplementation` alongside `testOptions.unitTests.isReturnDefaultValues = true`.
+- **Reason:** Prevents JVM unit tests from failing due to stubbed Android `org.json` classes while ensuring high-performance, robust JSON streaming parsing.
+- **Date:** 2026-11-20
