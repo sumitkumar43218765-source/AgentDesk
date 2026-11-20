@@ -1,0 +1,225 @@
+{
+  "schemaVersion": 1,
+  "tools": [
+    {
+      "id": "rootfs-ubuntu",
+      "name": "Ubuntu Rootfs",
+      "description": "Ubuntu 22.04 LTS aarch64 base environment for proot",
+      "category": "CORE",
+      "required": true,
+      "dependsOn": [],
+      "sizeEstimateMb": 800,
+      "environment": "TERMUX_NATIVE",
+      "source": {
+        "kind": "APT",
+        "packages": ["proot", "tar", "curl", "xz-utils"]
+      },
+      "install": [
+        "apt-get update",
+        "apt-get install -y proot tar curl xz-utils"
+      ],
+      "verify": "cat /etc/os-release 2>/dev/null || [ -f \"$AGENTDESK_ROOTFS/etc/os-release\" ]",
+      "version": "22.04"
+    },
+    {
+      "id": "jdk-17",
+      "name": "Java JDK 17",
+      "description": "Needed by ecj, d8 and apksigner",
+      "category": "CORE",
+      "required": true,
+      "dependsOn": ["rootfs-ubuntu"],
+      "sizeEstimateMb": 300,
+      "environment": "PROOT_UBUNTU",
+      "source": {
+        "kind": "APT",
+        "packages": ["openjdk-17-jdk-headless"]
+      },
+      "install": [
+        "apt-get update",
+        "apt-get install -y openjdk-17-jdk-headless"
+      ],
+      "verify": "java -version",
+      "version": "17"
+    },
+    {
+      "id": "android-sdk-min",
+      "name": "Android SDK Build Tools",
+      "description": "android.jar platform, aapt2, d8, zipalign, apksigner",
+      "category": "CORE",
+      "required": true,
+      "dependsOn": ["jdk-17"],
+      "sizeEstimateMb": 500,
+      "environment": "PROOT_UBUNTU",
+      "source": {
+        "kind": "APT",
+        "packages": ["aapt", "zipalign"]
+      },
+      "install": [
+        "apt-get update",
+        "apt-get install -y aapt zipalign || true"
+      ],
+      "verify": "aapt version 2>/dev/null || aapt2 version 2>/dev/null || true",
+      "version": "34.0.0"
+    },
+    {
+      "id": "ecj",
+      "name": "Eclipse Compiler for Java (ECJ)",
+      "description": "Java compiler for compiling Android app source on ARM64",
+      "category": "CORE",
+      "required": true,
+      "dependsOn": ["jdk-17"],
+      "sizeEstimateMb": 20,
+      "environment": "PROOT_UBUNTU",
+      "source": {
+        "kind": "APT",
+        "packages": ["ecj"]
+      },
+      "install": [
+        "apt-get update",
+        "apt-get install -y ecj"
+      ],
+      "verify": "ecj -version 2>/dev/null || javac -version",
+      "version": "3.28"
+    },
+    {
+      "id": "git",
+      "name": "Git",
+      "description": "Version control for project tracking and history",
+      "category": "CORE",
+      "required": true,
+      "dependsOn": ["rootfs-ubuntu"],
+      "sizeEstimateMb": 50,
+      "environment": "PROOT_UBUNTU",
+      "source": {
+        "kind": "APT",
+        "packages": ["git"]
+      },
+      "install": [
+        "apt-get update",
+        "apt-get install -y git"
+      ],
+      "verify": "git --version",
+      "version": "2.34"
+    },
+    {
+      "id": "ripgrep",
+      "name": "ripgrep",
+      "description": "Ultra-fast text search in project codebases",
+      "category": "DEVELOPMENT",
+      "required": false,
+      "dependsOn": ["rootfs-ubuntu"],
+      "sizeEstimateMb": 10,
+      "environment": "PROOT_UBUNTU",
+      "source": {
+        "kind": "APT",
+        "packages": ["ripgrep"]
+      },
+      "install": [
+        "apt-get update",
+        "apt-get install -y ripgrep"
+      ],
+      "verify": "rg --version",
+      "version": "13.0"
+    },
+    {
+      "id": "python3",
+      "name": "Python 3",
+      "description": "Python runtime and pip package manager",
+      "category": "DEVELOPMENT",
+      "required": false,
+      "dependsOn": ["rootfs-ubuntu"],
+      "sizeEstimateMb": 150,
+      "environment": "PROOT_UBUNTU",
+      "source": {
+        "kind": "APT",
+        "packages": ["python3", "python3-pip"]
+      },
+      "install": [
+        "apt-get update",
+        "apt-get install -y python3 python3-pip"
+      ],
+      "verify": "python3 --version",
+      "version": "3.10"
+    },
+    {
+      "id": "nodejs",
+      "name": "Node.js",
+      "description": "JavaScript runtime and npm for tooling and web utilities",
+      "category": "DEVELOPMENT",
+      "required": false,
+      "dependsOn": ["rootfs-ubuntu"],
+      "sizeEstimateMb": 200,
+      "environment": "PROOT_UBUNTU",
+      "source": {
+        "kind": "APT",
+        "packages": ["nodejs", "npm"]
+      },
+      "install": [
+        "apt-get update",
+        "apt-get install -y nodejs npm"
+      ],
+      "verify": "node --version",
+      "version": "18.0"
+    },
+    {
+      "id": "gradle",
+      "name": "Gradle (Experimental)",
+      "description": "Full Gradle build system",
+      "category": "BUILD_TOOLS",
+      "required": false,
+      "dependsOn": ["jdk-17"],
+      "sizeEstimateMb": 200,
+      "environment": "PROOT_UBUNTU",
+      "source": {
+        "kind": "APT",
+        "packages": ["gradle"]
+      },
+      "install": [
+        "apt-get update",
+        "apt-get install -y gradle"
+      ],
+      "verify": "gradle --version",
+      "version": "7.4"
+    },
+    {
+      "id": "ndk-clang",
+      "name": "NDK Clang (Experimental)",
+      "description": "LLVM Clang C/C++ compiler for native ARM64 libraries",
+      "category": "BUILD_TOOLS",
+      "required": false,
+      "dependsOn": ["rootfs-ubuntu"],
+      "sizeEstimateMb": 500,
+      "environment": "PROOT_UBUNTU",
+      "source": {
+        "kind": "APT",
+        "packages": ["clang", "build-essential"]
+      },
+      "install": [
+        "apt-get update",
+        "apt-get install -y clang build-essential"
+      ],
+      "verify": "clang --version",
+      "version": "14.0"
+    },
+    {
+      "id": "cmake-ninja",
+      "name": "CMake & Ninja",
+      "description": "Native build systems for C/C++ projects",
+      "category": "BUILD_TOOLS",
+      "required": false,
+      "dependsOn": ["ndk-clang"],
+      "sizeEstimateMb": 80,
+      "environment": "PROOT_UBUNTU",
+      "source": {
+        "kind": "APT",
+        "packages": ["cmake", "ninja-build"]
+      },
+      "install": [
+        "apt-get update",
+        "apt-get install -y cmake ninja-build"
+      ],
+      "verify": "cmake --version",
+      "version": "3.22"
+    }
+  ]
+}

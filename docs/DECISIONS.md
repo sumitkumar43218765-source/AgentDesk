@@ -23,3 +23,8 @@
 - **Decision:** Utilized `kotlinx.serialization.json` across all data models and network DTOs, and added standard `org.json:json:20240303` to `testImplementation` alongside `testOptions.unitTests.isReturnDefaultValues = true`.
 - **Reason:** Prevents JVM unit tests from failing due to stubbed Android `org.json` classes while ensuring high-performance, robust JSON streaming parsing.
 - **Date:** 2026-11-20
+
+## D007: Manifest-driven Setup and DoneMarker File Truth
+- **Decision:** Tool state is cached in Room `ToolInstallStateEntity`, but filesystem markers (`setup/done/<id>@<version>`) combined with actual binary `verify` execution serve as source of truth, reconciled on app launch.
+- **Reason:** Complies with PRD M2 architecture; guarantees process deaths or database clearing never cause redundant package re-downloads when binaries are already installed.
+- **Date:** 2026-11-20

@@ -5,6 +5,9 @@ import kotlinx.serialization.Serializable
 @Serializable
 sealed interface Routes {
     @Serializable
+    data object Splash : Routes
+
+    @Serializable
     data object Home : Routes
 
     @Serializable
@@ -27,6 +30,15 @@ sealed interface Routes {
 
     @Serializable
     data object Setup : Routes
+
+    @Serializable
+    data object ToolSetup : Routes
+
+    @Serializable
+    data object Install : Routes
+
+    @Serializable
+    data object ToolManager : Routes
 
     @Serializable
     data object Settings : Routes

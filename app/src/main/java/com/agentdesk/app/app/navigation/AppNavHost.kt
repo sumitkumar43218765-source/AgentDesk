@@ -10,7 +10,7 @@ fun AppNavHost(
     navController: NavHostController,
     registrars: Set<NavGraphRegistrar>,
     modifier: Modifier = Modifier,
-    startDestination: Routes = Routes.Home
+    startDestination: Routes = Routes.Splash
 ) {
     NavHost(
         navController = navController,
