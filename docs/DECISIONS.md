@@ -54,3 +54,14 @@
 - **Decision:** Implemented `LoopGuard` tracking tool name and argument tuples: 3 identical invocations yield an LLM warning; 5 identical invocations or 5 consecutive execution errors abort the run immediately.
 - **Reason:** Prevents infinite LLM hallucination loops and runaway token drain.
 - **Date:** 2026-11-21
+
+## D013: AgentToolRegistry Interface Separation
+- **Decision:** Extracted `AgentToolRegistry` interface extending `ToolRegistry`, allowing `DefaultAgentLoop` to depend solely on interfaces rather than concrete classes, facilitating pure-Kotlin fake testing doubles without Mockito or Robolectric.
+- **Reason:** Enhances modularity and speeds up JVM unit test suite.
+- **Date:** 2026-11-21
+
+## D014: Settings, Notification Channels, and Defense-in-Depth Diagnostics Redaction
+- **Decision:** Implemented unified Settings screen with 10 PRD-defined sections, 6 dedicated Android Notification Channels (`service`, `setup`, `build`, `agent`, `approval`, `backup`), typed confirmation for `WipeWorkspaceUseCase` ("WIPE WORKSPACE"), and defense-in-depth redaction in both `DiagnosticsCollector` and `DiagnosticsZipWriter` to ensure no API keys or sensitive credentials leak into export bundles.
+- **Reason:** Guarantees user privacy, strict security against accidental project destruction, seamless background action responses, and compliance with Android security guidelines.
+- **Date:** 2026-11-21
+
