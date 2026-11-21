@@ -33,3 +33,13 @@
 - **Decision:** Projects are stored at `PathProvider.projectsRoot/<slug>`, which maps directly to guest proot `/root/projects/<slug>`. The app UI and agent runtime perform direct host filesystem IO while tools and compilers execute commands at the corresponding guest path.
 - **Reason:** Enables fast native Linux filesystem semantics (symlinks, executable bits, case sensitivity) required by `git`, `ecj`, `aapt2`, and Android build tools, while avoiding Shared Storage SAF performance overhead.
 - **Date:** 2026-11-20
+
+## D009: DocumentBuilderFactory DOM + Regex Fallback for ManifestReader
+- **Decision:** Used standard `DocumentBuilderFactory` with XML namespace handling and secondary regex attribute matching rather than Android-only `XmlPullParser`.
+- **Reason:** Guarantees reliable XML parsing across both standard JVM unit tests and Android runtime without requiring mocked pull parser dependencies.
+- **Date:** 2026-11-21
+
+## D010: Keystore Secrets Persistence with Keystore AES-GCM CryptoBox
+- **Decision:** Release keystore passwords and aliases are encrypted using `CryptoBox` (Android Keystore AES-256-GCM) and persisted in private preferences; passwords are scrubbed from all build logs and terminal chunks.
+- **Reason:** Prevents credential leaks in history logs, memory dumps, or plain storage while fulfilling security requirements of M4.
+- **Date:** 2026-11-21
