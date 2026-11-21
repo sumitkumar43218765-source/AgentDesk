@@ -240,8 +240,8 @@ class SettingsViewModel @Inject constructor(
                     _uiState.update {
                         it.copy(
                             isExporting = false,
-                            exportedZipPath = result.data.absolutePath,
-                            statusMessage = "Diagnostics bundle saved to ${result.data.name}"
+                            exportedZipPath = result.value.absolutePath,
+                            statusMessage = "Diagnostics bundle saved to ${result.value.name}"
                         )
                     }
                 }
