@@ -48,11 +48,11 @@ class ContextManagerTest {
             )
         }
 
-        // Token budget low enough to trigger trimming
+        // Token budget sufficient to keep messages after stubbing
         val prepared = contextManager.prepareMessages(
             systemPrompt = systemPrompt,
             messages = messages,
-            maxContextTokens = 500
+            maxContextTokens = 5000
         )
 
         // Earlier messages should have tool output stubbed

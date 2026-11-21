@@ -56,7 +56,7 @@ class EditFileTool @Inject constructor(
         val originalContent = (readRes as AppResult.Success).value.content
         if (!originalContent.contains(oldStr)) {
             return ToolOutput(
-                text = "<exit_code>1</exit_code>\n<output>\nError: 'old_str' not found in $relPath. Verify file contents before editing.\n</output>",
+                text = "<exit_code>1</exit_code>\n<output>\nError: Target text not found: 'old_str' not found in $relPath. Verify file contents before editing.\n</output>",
                 isError = true
             )
         }
@@ -74,11 +74,12 @@ class EditFileTool @Inject constructor(
             originalContent.replaceFirst(oldStr, newStr)
         }
 
+        val diff = "-$oldStr\n+$newStr"
         val writeRes = projectFileSystem.write(ctx.projectId, relPath, updatedContent)
         return when (writeRes) {
             is AppResult.Success -> {
                 ToolOutput(
-                    text = "<exit_code>0</exit_code>\n<output>\nSuccessfully edited $relPath\n</output>",
+                    text = "<exit_code>0</exit_code>\n<output>\nSuccessfully edited $relPath\n$diff\n</output>",
                     isError = false
                 )
             }

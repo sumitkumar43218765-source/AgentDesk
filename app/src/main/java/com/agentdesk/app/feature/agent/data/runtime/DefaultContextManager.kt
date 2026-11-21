@@ -56,11 +56,13 @@ class DefaultContextManager @Inject constructor() : ContextManager {
     }
 
     override fun trimToolOutput(output: String, maxChars: Int): String {
+        if (output.length <= maxChars) return output
         val distilled = LogDistiller.distill(output, maxChars)
-        return if (distilled.text.length > maxChars) {
-            distilled.text.take(maxChars) + "\n...[Output truncated to $maxChars characters]"
+        val text = distilled.text
+        return if (text.length > maxChars) {
+            text.take(maxChars) + "\n...[Output truncated to $maxChars characters]"
         } else {
-            distilled.text
+            text + "\n...[Output truncated to $maxChars characters]"
         }
     }
 
