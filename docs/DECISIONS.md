@@ -65,3 +65,8 @@
 - **Reason:** Guarantees user privacy, strict security against accidental project destruction, seamless background action responses, and compliance with Android security guidelines.
 - **Date:** 2026-11-21
 
+## D015: Real Termux Native Terminal Integration (PTY & TerminalView)
+- **Decision:** Integrated official Termux core AARs (`terminal-view`, `terminal-emulator`, `termux-shared` v0.118.0) via JitPack with arm64 native `libtermux.so` packaged into the application. Replaced the initial text-based mock with a real interactive `TerminalView` hosted in Compose via `AndroidView`, multi-session tab lifecycle managed by `TermuxService`, PTY subprocess creation via `TerminalSession`, and dynamic `ExtraKeysBar` with visual modifier toggling (CTRL, ALT, arrows, ESC, TAB).
+- **Reason:** Fulfills PRD M1 requirement for genuine terminal emulation, ANSI escape color rendering, interactive CLI tools (nano, vim, bash, top), and direct keyboard input instead of simulated text entry.
+- **Date:** 2026-11-21
+
