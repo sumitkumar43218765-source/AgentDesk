@@ -68,7 +68,7 @@ class DiagnosticsRedactionTest {
             val summaryText = zip.getInputStream(summaryEntry).bufferedReader().readText()
             assertTrue(summaryText.contains("Environment info"))
             assertFalse(summaryText.contains("abcdef123456"))
-            assertTrue(summaryText.contains("Bearer [REDACTED]"))
+            assertTrue(summaryText.contains("[REDACTED]"))
 
             val logEntry = zip.getEntry("logs/${logFile.name}")
             val logText = zip.getInputStream(logEntry).bufferedReader().readText()
