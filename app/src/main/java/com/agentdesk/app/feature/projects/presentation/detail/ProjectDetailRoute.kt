@@ -48,6 +48,12 @@ fun ProjectDetailRoute(
         onCloseCheckpointDialog = viewModel::closeCheckpointDialog,
         onCreateCheckpoint = viewModel::createCheckpoint,
         onOpenHistory = viewModel::openHistory,
+        onBuildClick = {
+            val id = uiState.project?.id
+            if (id != null) {
+                navController.navigate(Routes.Build(id))
+            }
+        },
         onCloseHistory = viewModel::closeHistory,
         onRestoreCommit = viewModel::restoreCheckpoint,
         onBackClick = { navController.popBackStack() },

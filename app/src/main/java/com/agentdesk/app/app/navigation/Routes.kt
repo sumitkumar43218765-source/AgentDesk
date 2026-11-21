@@ -47,5 +47,11 @@ sealed interface Routes {
     data object ToolManager : Routes
 
     @Serializable
+    data class Build(val projectId: String) : Routes
+
+    @Serializable
+    data class BuildHistory(val projectId: String) : Routes
+
+    @Serializable
     data object Settings : Routes
 }

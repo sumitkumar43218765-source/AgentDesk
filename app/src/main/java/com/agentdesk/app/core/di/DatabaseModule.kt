@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.Room
 import com.agentdesk.app.core.database.AppDatabase
 import com.agentdesk.app.core.database.AppMetadataDao
+import com.agentdesk.app.feature.build.data.local.BuildRunDao
 import com.agentdesk.app.feature.projects.data.local.ProjectDao
 import com.agentdesk.app.feature.setup.data.local.ToolInstallStateDao
 import dagger.Module
@@ -42,5 +43,10 @@ object DatabaseModule {
     @Provides
     fun provideProjectDao(database: AppDatabase): ProjectDao {
         return database.projectDao()
+    }
+
+    @Provides
+    fun provideBuildRunDao(database: AppDatabase): BuildRunDao {
+        return database.buildRunDao()
     }
 }

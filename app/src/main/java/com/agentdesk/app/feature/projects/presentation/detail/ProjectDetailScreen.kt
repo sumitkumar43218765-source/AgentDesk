@@ -17,6 +17,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.FileDownload
 import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Terminal
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -68,6 +69,7 @@ fun ProjectDetailScreen(
     onOpenHistory: () -> Unit,
     onCloseHistory: () -> Unit,
     onRestoreCommit: (String) -> Unit,
+    onBuildClick: () -> Unit = {},
     onBackClick: () -> Unit,
     onClearMessage: () -> Unit,
     modifier: Modifier = Modifier
@@ -94,6 +96,9 @@ fun ProjectDetailScreen(
                     }
                 },
                 actions = {
+                    IconButton(onClick = onBuildClick) {
+                        Icon(Icons.Default.PlayArrow, contentDescription = "Build APK")
+                    }
                     IconButton(onClick = onOpenTerminal) {
                         Icon(Icons.Default.Terminal, contentDescription = "Terminal")
                     }
