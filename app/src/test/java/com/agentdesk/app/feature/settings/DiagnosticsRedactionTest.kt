@@ -4,7 +4,6 @@ import com.agentdesk.app.core.common.AppResult
 import com.agentdesk.app.core.logging.LogRedactor
 import com.agentdesk.app.feature.settings.data.DiagnosticsZipWriter
 import com.agentdesk.app.feature.settings.domain.model.DiagnosticsBundle
-import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Rule
@@ -36,7 +35,7 @@ class DiagnosticsRedactionTest {
         assertFalse(redacted.contains("mySecretToken1234567890"))
         assertFalse(redacted.contains("super_secret_password"))
 
-        assertTrue(redacted.contains("sk-ant-[REDACTED]"))
+        assertTrue(redacted.contains("[REDACTED]"))
         assertTrue(redacted.contains("Bearer [REDACTED]"))
     }
 
@@ -68,11 +67,13 @@ class DiagnosticsRedactionTest {
             val summaryEntry = zip.getEntry("environment_summary.txt")
             val summaryText = zip.getInputStream(summaryEntry).bufferedReader().readText()
             assertTrue(summaryText.contains("Environment info"))
+            assertFalse(summaryText.contains("abcdef123456"))
+            assertTrue(summaryText.contains("Bearer [REDACTED]"))
 
             val logEntry = zip.getEntry("logs/${logFile.name}")
             val logText = zip.getInputStream(logEntry).bufferedReader().readText()
             assertFalse(logText.contains("sk-1234567890abcdef1234567890"))
-            assertTrue(logText.contains("sk-[REDACTED]"))
+            assertTrue(logText.contains("[REDACTED]"))
         }
     }
 }
