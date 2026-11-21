@@ -54,4 +54,34 @@ sealed interface Routes {
 
     @Serializable
     data object Settings : Routes
+
+    @Serializable
+    data object SettingsAgent : Routes
+
+    @Serializable
+    data object SettingsGrants : Routes
+
+    @Serializable
+    data object SettingsEnvironment : Routes
+
+    @Serializable
+    data object SettingsProjects : Routes
+
+    @Serializable
+    data object SettingsTerminal : Routes
+
+    @Serializable
+    data object SettingsAppearance : Routes
+
+    @Serializable
+    data object SettingsPermissions : Routes
+
+    @Serializable
+    data object SettingsDataPrivacy : Routes
+
+    @Serializable
+    data object SettingsAbout : Routes
+
+    @Serializable
+    data object SettingsLicenses : Routes
 }

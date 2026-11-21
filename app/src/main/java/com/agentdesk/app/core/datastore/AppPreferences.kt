@@ -36,6 +36,10 @@ class AppPreferences @Inject constructor(
         prefs[PreferenceKeys.TERMINAL_FONT_SIZE] ?: 14
     }
 
+    val terminalKeepScreenOn: Flow<Boolean> = safeData.map { prefs ->
+        prefs[PreferenceKeys.TERMINAL_KEEP_SCREEN_ON] ?: false
+    }
+
     val wifiOnlyDownloads: Flow<Boolean> = safeData.map { prefs ->
         prefs[PreferenceKeys.WIFI_ONLY_DOWNLOADS] ?: false
     }
@@ -52,6 +56,46 @@ class AppPreferences @Inject constructor(
         prefs[PreferenceKeys.DEFAULT_AGENT_MODE] ?: "builder"
     }
 
+    val agentDefaultRunMode: Flow<String> = safeData.map { prefs ->
+        prefs[PreferenceKeys.AGENT_DEFAULT_RUN_MODE] ?: "ASK"
+    }
+
+    val agentMaxSteps: Flow<Int> = safeData.map { prefs ->
+        prefs[PreferenceKeys.AGENT_MAX_STEPS] ?: 40
+    }
+
+    val agentShellTimeout: Flow<Int> = safeData.map { prefs ->
+        prefs[PreferenceKeys.AGENT_SHELL_TIMEOUT] ?: 120
+    }
+
+    val agentAllowNetwork: Flow<Boolean> = safeData.map { prefs ->
+        prefs[PreferenceKeys.AGENT_ALLOW_NETWORK] ?: true
+    }
+
+    val agentTokenBudget: Flow<Int> = safeData.map { prefs ->
+        prefs[PreferenceKeys.AGENT_TOKEN_BUDGET] ?: 500_000
+    }
+
+    val gitAuthorName: Flow<String> = safeData.map { prefs ->
+        prefs[PreferenceKeys.GIT_AUTHOR_NAME] ?: "AgentDesk User"
+    }
+
+    val gitAuthorEmail: Flow<String> = safeData.map { prefs ->
+        prefs[PreferenceKeys.GIT_AUTHOR_EMAIL] ?: "user@agentdesk.local"
+    }
+
+    val autoCheckpoint: Flow<Boolean> = safeData.map { prefs ->
+        prefs[PreferenceKeys.AUTO_CHECKPOINT] ?: true
+    }
+
+    val backupReminders: Flow<Boolean> = safeData.map { prefs ->
+        prefs[PreferenceKeys.BACKUP_REMINDERS] ?: true
+    }
+
+    val aptMirror: Flow<String> = safeData.map { prefs ->
+        prefs[PreferenceKeys.APT_MIRROR] ?: "https://ports.ubuntu.com/ubuntu-ports"
+    }
+
     suspend fun setThemeMode(mode: String) {
         dataStore.edit { it[PreferenceKeys.THEME_MODE] = mode }
     }
@@ -62,6 +106,10 @@ class AppPreferences @Inject constructor(
 
     suspend fun setTerminalFontSize(size: Int) {
         dataStore.edit { it[PreferenceKeys.TERMINAL_FONT_SIZE] = size }
+    }
+
+    suspend fun setTerminalKeepScreenOn(enabled: Boolean) {
+        dataStore.edit { it[PreferenceKeys.TERMINAL_KEEP_SCREEN_ON] = enabled }
     }
 
     suspend fun setWifiOnlyDownloads(enabled: Boolean) {
@@ -78,5 +126,45 @@ class AppPreferences @Inject constructor(
 
     suspend fun setDefaultAgentMode(mode: String) {
         dataStore.edit { it[PreferenceKeys.DEFAULT_AGENT_MODE] = mode }
+    }
+
+    suspend fun setAgentDefaultRunMode(mode: String) {
+        dataStore.edit { it[PreferenceKeys.AGENT_DEFAULT_RUN_MODE] = mode }
+    }
+
+    suspend fun setAgentMaxSteps(steps: Int) {
+        dataStore.edit { it[PreferenceKeys.AGENT_MAX_STEPS] = steps }
+    }
+
+    suspend fun setAgentShellTimeout(seconds: Int) {
+        dataStore.edit { it[PreferenceKeys.AGENT_SHELL_TIMEOUT] = seconds }
+    }
+
+    suspend fun setAgentAllowNetwork(allowed: Boolean) {
+        dataStore.edit { it[PreferenceKeys.AGENT_ALLOW_NETWORK] = allowed }
+    }
+
+    suspend fun setAgentTokenBudget(budget: Int) {
+        dataStore.edit { it[PreferenceKeys.AGENT_TOKEN_BUDGET] = budget }
+    }
+
+    suspend fun setGitAuthorName(name: String) {
+        dataStore.edit { it[PreferenceKeys.GIT_AUTHOR_NAME] = name }
+    }
+
+    suspend fun setGitAuthorEmail(email: String) {
+        dataStore.edit { it[PreferenceKeys.GIT_AUTHOR_EMAIL] = email }
+    }
+
+    suspend fun setAutoCheckpoint(enabled: Boolean) {
+        dataStore.edit { it[PreferenceKeys.AUTO_CHECKPOINT] = enabled }
+    }
+
+    suspend fun setBackupReminders(enabled: Boolean) {
+        dataStore.edit { it[PreferenceKeys.BACKUP_REMINDERS] = enabled }
+    }
+
+    suspend fun setAptMirror(mirror: String) {
+        dataStore.edit { it[PreferenceKeys.APT_MIRROR] = mirror }
     }
 }

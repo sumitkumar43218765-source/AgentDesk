@@ -29,4 +29,7 @@ interface BuildRunDao {
 
     @Query("DELETE FROM build_runs WHERE id IN (:ids)")
     suspend fun deleteByIds(ids: List<String>)
+
+    @Query("DELETE FROM build_runs")
+    suspend fun clearAll()
 }
