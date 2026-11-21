@@ -22,7 +22,7 @@ class ToolRegistryImpl @Inject constructor(
     private val askUserTool: AskUserTool
 ) : ToolRegistry {
 
-    private val tools: List<AgentTool> by lazy {
+    private val agentTools: List<AgentTool> by lazy {
         listOf(
             listDirTool,
             readFileTool,
@@ -40,11 +40,11 @@ class ToolRegistryImpl @Inject constructor(
     }
 
     private val toolMap: Map<String, AgentTool> by lazy {
-        tools.associateBy { it.spec.name }
+        agentTools.associateBy { it.spec.name }
     }
 
     override fun getTools(): List<ToolSpec> {
-        return tools.map { it.spec }
+        return agentTools.map { it.spec }
     }
 
     fun getTool(name: String): AgentTool? {
@@ -52,6 +52,6 @@ class ToolRegistryImpl @Inject constructor(
     }
 
     fun getAllAgentTools(): List<AgentTool> {
-        return tools
+        return agentTools
     }
 }
