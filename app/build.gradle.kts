@@ -111,6 +111,12 @@ dependencies {
     implementation(libs.okhttp.logging)
     implementation(libs.okhttp.sse)
 
+    // Termux Native Terminal & Emulator
+    implementation("com.github.termux.termux-app:terminal-view:v0.118.0")
+    implementation("com.github.termux.termux-app:terminal-emulator:v0.118.0")
+    implementation("com.github.termux.termux-app:termux-shared:v0.118.0")
+    implementation("com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava")
+
     testImplementation(libs.junit)
     testImplementation(libs.mockk)
     testImplementation(libs.kotlinx.coroutines.test)
