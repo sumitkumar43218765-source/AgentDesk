@@ -47,7 +47,7 @@ fun FileTreeScreen(
             }
         } else if (uiState.entries.isEmpty()) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                EmptyState(message = "Project directory is empty.")
+                EmptyState(title = "Project directory is empty.")
             }
         } else {
             LazyColumn(modifier = Modifier.fillMaxSize()) {

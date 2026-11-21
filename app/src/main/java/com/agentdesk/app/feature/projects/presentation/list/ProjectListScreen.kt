@@ -102,7 +102,7 @@ fun ProjectListScreen(
                     contentAlignment = Alignment.Center
                 ) {
                     EmptyState(
-                        message = if (uiState.searchQuery.isEmpty()) "No projects yet. Tap '+' to create your first app!" else "No matching projects found."
+                        title = if (uiState.searchQuery.isEmpty()) "No projects yet. Tap '+' to create your first app!" else "No matching projects found."
                     )
                 }
             } else {

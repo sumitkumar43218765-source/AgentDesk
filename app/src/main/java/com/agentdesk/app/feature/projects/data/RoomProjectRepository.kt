@@ -57,7 +57,7 @@ class RoomProjectRepository @Inject constructor(
         val existingSlugs = projectDao.getAll().map { it.slug }.toSet()
         val slug = slugger.generateSlug(name, existingSlugs)
         val projectDir = File(pathProvider.projectsRoot, slug)
-        val id = idGenerator.generateId()
+        val id = idGenerator.newId()
         val pkg = packageName ?: slugger.derivePackageName(slug)
         val now = System.currentTimeMillis()
 
@@ -122,7 +122,7 @@ class RoomProjectRepository @Inject constructor(
 
         val existingMeta = metadataFile.read(projectDir)
         val now = System.currentTimeMillis()
-        val id = existingMeta?.id ?: idGenerator.generateId()
+        val id = existingMeta?.id ?: idGenerator.newId()
         val name = existingMeta?.name ?: suggestedName
         val template = existingMeta?.template ?: TemplateId.EMPTY.name
         val pkg = existingMeta?.packageName ?: slugger.derivePackageName(slug)
@@ -170,7 +170,7 @@ class RoomProjectRepository @Inject constructor(
             return AppResult.Failure(AppError.Storage("Project directory missing: ${projectDir.absolutePath}"))
         }
 
-        val exportResult = when (target) {
+        val exportResult: AppResult<String> = when (target) {
             is ExportTarget.Downloads -> {
                 val downloadsDir = File(
                     Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
@@ -178,11 +178,11 @@ class RoomProjectRepository @Inject constructor(
                 ).apply { if (!exists()) mkdirs() }
                 val targetFile = File(downloadsDir, target.fileName)
                 val res = zipExporter.exportToFile(projectDir, targetFile, options)
-                if (res is AppResult.Success) AppResult.Success(targetFile.absolutePath) else res
+                if (res is AppResult.Success) AppResult.Success(targetFile.absolutePath) else AppResult.Failure(res.errorOrNull() ?: AppError.Storage("Export failed"))
             }
             is ExportTarget.SafUri -> {
                 val res = zipExporter.exportToStream(projectDir, target.streamSupplier(), options)
-                if (res is AppResult.Success) AppResult.Success("SAF Export complete") else res
+                if (res is AppResult.Success) AppResult.Success("SAF Export complete") else AppResult.Failure(res.errorOrNull() ?: AppError.Storage("Export failed"))
             }
         }
 
@@ -225,7 +225,7 @@ class RoomProjectRepository @Inject constructor(
 
         srcDir.copyRecursively(destDir, overwrite = true)
 
-        val newId = idGenerator.generateId()
+        val newId = idGenerator.newId()
         val now = System.currentTimeMillis()
         val newMeta = ProjectMetadataDto(
             id = newId,
