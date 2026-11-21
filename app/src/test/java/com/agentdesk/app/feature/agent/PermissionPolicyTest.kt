@@ -32,8 +32,15 @@ class PermissionPolicyTest {
         override suspend fun getGrantsForTool(projectId: String, toolName: String): List<PermissionGrantEntity> {
             return grantsList.filter { it.projectId == projectId && it.toolName == toolName }
         }
+        override fun observeAll(): kotlinx.coroutines.flow.Flow<List<PermissionGrantEntity>> = kotlinx.coroutines.flow.flowOf(grantsList)
+        override suspend fun deleteById(id: String) {
+            grantsList.removeAll { it.id == id }
+        }
         override suspend fun clearForProject(projectId: String) {
-            grantsList.removeIf { it.projectId == projectId }
+            grantsList.removeAll { it.projectId == projectId }
+        }
+        override suspend fun clearAll() {
+            grantsList.clear()
         }
     }
 

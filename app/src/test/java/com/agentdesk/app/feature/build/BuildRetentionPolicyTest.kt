@@ -33,6 +33,9 @@ class BuildRetentionPolicyTest {
             deletedIds.addAll(ids)
             storedRuns.removeAll { ids.contains(it.id) }
         }
+        override suspend fun clearAll() {
+            storedRuns.clear()
+        }
     }
 
     private val fakePathProvider = object : PathProvider {

@@ -106,7 +106,7 @@ class WipeWorkspaceTest {
             id = "proj-1",
             name = "Project 1",
             slug = "project-1",
-            template = TemplateId.EMPTY_ACTIVITY,
+            template = TemplateId.EMPTY,
             packageName = "com.test.p1",
             createdAt = 1000L,
             lastModifiedAt = 2000L
