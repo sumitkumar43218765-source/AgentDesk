@@ -1,7 +1,5 @@
 package com.agentdesk.app.feature.agent
 
-import android.content.Context
-import androidx.test.core.app.ApplicationProvider
 import com.agentdesk.app.feature.agent.data.local.PermissionGrantDao
 import com.agentdesk.app.feature.agent.data.local.PermissionGrantEntity
 import com.agentdesk.app.feature.agent.data.permission.DefaultCommandRiskClassifier
@@ -15,58 +13,47 @@ import com.agentdesk.app.feature.agent.domain.model.ToolContext
 import com.agentdesk.app.feature.agent.domain.model.ToolOutput
 import com.agentdesk.app.feature.agent.domain.model.ToolSummary
 import com.agentdesk.app.feature.ai.domain.model.ToolSpec
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
-import org.junit.runner.RunWith
-import org.robolectric.RobolectricTestRunner
-import org.robolectric.annotation.Config
 
-@RunWith(RobolectricTestRunner::class)
-@Config(sdk = [28])
 class PermissionPolicyTest {
 
     private lateinit var gateway: DefaultPermissionGateway
     private val grantsList = mutableListOf<PermissionGrantEntity>()
-    private lateinit var context: Context
 
     private val fakeDao = object : PermissionGrantDao {
-        override suspend fun insert(grant: PermissionGrantEntity) { grantsList.add(grant) }
+        override suspend fun insert(entity: PermissionGrantEntity) { grantsList.add(entity) }
         override suspend fun getGrantsForTool(projectId: String, toolName: String): List<PermissionGrantEntity> {
             return grantsList.filter { it.projectId == projectId && it.toolName == toolName }
         }
-        override fun observeGrantsForProject(projectId: String): Flow<List<PermissionGrantEntity>> {
-            return flowOf(grantsList.filter { it.projectId == projectId })
+        override suspend fun clearForProject(projectId: String) {
+            grantsList.removeIf { it.projectId == projectId }
         }
-        override suspend fun revoke(id: String) { grantsList.removeIf { it.id == id } }
-        override suspend fun revokeAllForProject(projectId: String) { grantsList.removeIf { it.projectId == projectId } }
     }
 
     private fun createFakeTool(name: String, permission: PermissionLevel): AgentTool {
         return object : AgentTool {
             override val spec = ToolSpec(name = name, description = "test", inputSchemaJson = "{}")
             override val permission = permission
-            override suspend fun execute(args: kotlinx.serialization.json.JsonObject, ctx: ToolContext): ToolOutput =
+            override suspend fun execute(args: JsonObject, ctx: ToolContext): ToolOutput =
                 ToolOutput("ok", false)
-            override fun describe(args: kotlinx.serialization.json.JsonObject): ToolSummary =
+            override fun describe(args: JsonObject): ToolSummary =
                 ToolSummary("Test $name", RiskLevel.LOW)
         }
     }
 
     @Before
     fun setUp() {
-        context = ApplicationProvider.getApplicationContext()
-        fakeDao = FakePermissionGrantDao()
+        grantsList.clear()
         gateway = DefaultPermissionGateway(
             grantDao = fakeDao,
-            riskClassifier = DefaultCommandRiskClassifier(),
-            context = context
+            riskClassifier = DefaultCommandRiskClassifier()
         )
     }
 

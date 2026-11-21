@@ -1,6 +1,6 @@
 package com.agentdesk.app.feature.agent
 
-import com.agentdesk.app.core.common.AppResult
+import com.agentdesk.app.core.common.DispatcherProvider
 import com.agentdesk.app.feature.agent.data.tools.DeletePathTool
 import com.agentdesk.app.feature.agent.data.tools.EditFileTool
 import com.agentdesk.app.feature.agent.data.tools.ReadFileTool
@@ -9,11 +9,12 @@ import com.agentdesk.app.feature.agent.domain.model.ToolContext
 import com.agentdesk.app.feature.projects.data.fs.DefaultProjectFileSystem
 import com.agentdesk.app.feature.projects.data.fs.PathSandbox
 import com.agentdesk.app.feature.terminal.domain.PathProvider
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
-import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
@@ -38,19 +39,31 @@ class ToolExecutionTest {
     @Before
     fun setUp() {
         val rootDir = tempFolder.newFolder("agent_root")
-        projectDir = File(rootDir, "test-proj").apply { mkdirs() }
+        val projectsRoot = File(rootDir, "projects").apply { mkdirs() }
+        projectDir = File(projectsRoot, "test-proj").apply { mkdirs() }
 
         val fakePathProvider = object : PathProvider {
-            override val prootRootDir: File = rootDir
-            override val guestProjectsDir: String = "/home/agent/projects"
-            override val internalStorageDir: File = rootDir
-            override val externalStorageDir: File = rootDir
-            override fun hostToGuest(hostFile: File): String = hostFile.absolutePath
-            override fun guestToHost(guestPath: String): File = File(guestPath)
+            override val termuxPrefix: File = File(rootDir, "prefix")
+            override val termuxHome: File = File(rootDir, "home")
+            override val tmpDir: File = File(rootDir, "tmp")
+            override val rootfsDir: File = File(rootDir, "rootfs")
+            override val rootfsHome: File = File(rootDir, "rootfs_home")
+            override val projectsRoot: File = projectsRoot
+            override val setupStateDir: File = File(rootDir, "setup")
+            override val logsDir: File = File(rootDir, "logs")
+            override val buildLogsDir: File = File(rootDir, "build_logs")
+            override fun hostToGuest(host: File): String = host.absolutePath
+            override fun guestToHost(guest: String): File = File(guest)
         }
 
-        val sandbox = PathSandbox(fakePathProvider)
-        fileSystem = DefaultProjectFileSystem(sandbox)
+        val fakeDispatchers = object : DispatcherProvider {
+            override val main: CoroutineDispatcher = Dispatchers.Unconfined
+            override val io: CoroutineDispatcher = Dispatchers.Unconfined
+            override val default: CoroutineDispatcher = Dispatchers.Unconfined
+        }
+
+        val sandbox = PathSandbox()
+        fileSystem = DefaultProjectFileSystem(fakePathProvider, sandbox, fakeDispatchers)
 
         readFileTool = ReadFileTool(fileSystem)
         writeFileTool = WriteFileTool(fileSystem)
@@ -90,7 +103,6 @@ class ToolExecutionTest {
 
     @Test
     fun `edit_file successfully performs targeted replacement`() = runBlocking {
-        // 1. Write initial file
         val initialContent = "line 1\nHello World\nline 3"
         val writeArgs = buildJsonObject {
             put("path", "hello.txt")
@@ -99,7 +111,6 @@ class ToolExecutionTest {
         val writeRes = writeFileTool.execute(writeArgs, toolContext)
         assertFalse(writeRes.isError)
 
-        // 2. Edit exact string
         val editArgs = buildJsonObject {
             put("path", "hello.txt")
             put("old_str", "Hello World")
@@ -109,7 +120,6 @@ class ToolExecutionTest {
         assertFalse(editRes.isError)
         assertTrue(editRes.text.contains("+Hello Android"))
 
-        // 3. Verify content
         val readArgs = buildJsonObject { put("path", "hello.txt") }
         val readRes = readFileTool.execute(readArgs, toolContext)
         assertTrue(readRes.text.contains("Hello Android"))
@@ -123,7 +133,6 @@ class ToolExecutionTest {
         }
         writeFileTool.execute(writeArgs, toolContext)
 
-        // Non-existent target
         val notFoundArgs = buildJsonObject {
             put("path", "repeat.txt")
             put("old_str", "missing target")
@@ -133,7 +142,6 @@ class ToolExecutionTest {
         assertTrue(notFoundRes.isError)
         assertTrue(notFoundRes.text.contains("Target text not found"))
 
-        // Ambiguous target (occurs 2 times)
         val ambiguousArgs = buildJsonObject {
             put("path", "repeat.txt")
             put("old_str", "repeat")

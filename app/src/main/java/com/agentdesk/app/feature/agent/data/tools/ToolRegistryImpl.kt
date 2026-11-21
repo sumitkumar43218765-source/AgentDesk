@@ -1,7 +1,7 @@
 package com.agentdesk.app.feature.agent.data.tools
 
 import com.agentdesk.app.feature.agent.domain.AgentTool
-import com.agentdesk.app.feature.ai.domain.ToolRegistry
+import com.agentdesk.app.feature.agent.domain.AgentToolRegistry
 import com.agentdesk.app.feature.ai.domain.model.ToolSpec
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -20,7 +20,7 @@ class ToolRegistryImpl @Inject constructor(
     private val installApkTool: InstallApkTool,
     private val gitTool: GitTool,
     private val askUserTool: AskUserTool
-) : ToolRegistry {
+) : AgentToolRegistry {
 
     private val agentTools: List<AgentTool> by lazy {
         listOf(
@@ -47,11 +47,11 @@ class ToolRegistryImpl @Inject constructor(
         return agentTools.map { it.spec }
     }
 
-    fun getTool(name: String): AgentTool? {
+    override fun getTool(name: String): AgentTool? {
         return toolMap[name]
     }
 
-    fun getAllAgentTools(): List<AgentTool> {
+    override fun getAllAgentTools(): List<AgentTool> {
         return agentTools
     }
 }

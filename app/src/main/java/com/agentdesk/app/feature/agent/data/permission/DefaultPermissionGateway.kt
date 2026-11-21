@@ -1,6 +1,5 @@
 package com.agentdesk.app.feature.agent.data.permission
 
-import android.content.Context
 import com.agentdesk.app.feature.agent.data.local.PermissionGrantDao
 import com.agentdesk.app.feature.agent.data.local.PermissionGrantEntity
 import com.agentdesk.app.feature.agent.domain.AgentTool
@@ -11,7 +10,6 @@ import com.agentdesk.app.feature.agent.domain.model.PermissionLevel
 import com.agentdesk.app.feature.agent.domain.model.PermissionRequest
 import com.agentdesk.app.feature.agent.domain.model.RiskLevel
 import com.agentdesk.app.feature.agent.domain.model.RunMode
-import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -27,13 +25,12 @@ import javax.inject.Singleton
 @Singleton
 class DefaultPermissionGateway @Inject constructor(
     private val grantDao: PermissionGrantDao,
-    private val riskClassifier: CommandRiskClassifier,
-    @ApplicationContext private val context: Context
+    private val riskClassifier: CommandRiskClassifier
 ) : PermissionGateway {
 
     private val pendingRequestsMap = ConcurrentHashMap<String, MutableStateFlow<List<PermissionRequest>>>()
     private val deferredDecisions = ConcurrentHashMap<String, CompletableDeferred<PermissionDecision>>()
-    private val sessionGrants = ConcurrentHashMap<String, MutableSet<String>>() // runId -> granted tool/scope
+    private val sessionGrants = ConcurrentHashMap<String, MutableSet<String>>()
 
     override suspend fun check(
         runId: String,
@@ -49,40 +46,35 @@ class DefaultPermissionGateway @Inject constructor(
             return PermissionDecision.AllowOnce
         }
 
-        // 2. Auto-accept edits mode
-        if (mode == RunMode.AUTO_ACCEPT_EDITS && (toolName == "write_file" || toolName == "edit_file")) {
-            return PermissionDecision.AllowOnce
-        }
-
-        // 3. For shell_exec tool, check allowlist and deny list
+        // 2. Deny list and High Risk gating for shell
         if (toolName == "shell_exec") {
             val cmd = args["command"]?.jsonPrimitive?.content ?: ""
             val risk = riskClassifier.classify(cmd)
             if (risk == RiskLevel.DENIED) {
-                return PermissionDecision.Deny("Command refused: matched system safety deny list.")
+                return PermissionDecision.Deny("Command rejected: matches destructive system deny list.")
             }
             if (risk == RiskLevel.LOW && ShellAllowlist.isAllowed(cmd)) {
                 return PermissionDecision.AllowOnce
             }
         }
 
-        // 4. Check session grants
-        val sessionSet = sessionGrants.getOrPut(runId) { ConcurrentHashMap.newKeySet() }
-        if (sessionSet.contains(toolName)) {
-            // HIGH risk commands always prompt even if session granted
-            val cmd = args["command"]?.jsonPrimitive?.content ?: ""
-            if (toolName != "shell_exec" || riskClassifier.classify(cmd) != RiskLevel.HIGH) {
-                return PermissionDecision.AllowOnce
-            }
+        // 3. Auto-accept edits mode: code editing tools bypass prompt
+        if (mode == RunMode.AUTO_ACCEPT_EDITS && (toolName == "write_file" || toolName == "edit_file")) {
+            return PermissionDecision.AllowOnce
         }
 
-        // 5. Check project persisted grants in database
+        // 4. Session grants check
+        val sessionSet = sessionGrants.getOrPut(runId) { ConcurrentHashMap.newKeySet() }
+        if (sessionSet.contains(toolName)) {
+            return PermissionDecision.AllowOnce
+        }
+
+        // 5. Project grants check
         val projectGrants = grantDao.getGrantsForTool(projectId, toolName)
         if (projectGrants.isNotEmpty()) {
             if (toolName == "shell_exec") {
                 val cmd = args["command"]?.jsonPrimitive?.content ?: ""
                 val risk = riskClassifier.classify(cmd)
-                // HIGH risk commands always prompt even with project grants
                 if (risk != RiskLevel.HIGH) {
                     val hasMatchingPrefix = projectGrants.any { cmd.startsWith(it.scopeKey) }
                     if (hasMatchingPrefix) {

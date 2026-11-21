@@ -6,12 +6,15 @@ import com.agentdesk.app.feature.agent.data.prompt.DefaultSystemPromptBuilder
 import com.agentdesk.app.feature.agent.data.runtime.DefaultAgentLoop
 import com.agentdesk.app.feature.agent.data.runtime.DefaultAgentRunner
 import com.agentdesk.app.feature.agent.data.runtime.DefaultContextManager
+import com.agentdesk.app.feature.agent.data.tools.ToolRegistryImpl
 import com.agentdesk.app.feature.agent.domain.AgentLoop
 import com.agentdesk.app.feature.agent.domain.AgentRunner
+import com.agentdesk.app.feature.agent.domain.AgentToolRegistry
 import com.agentdesk.app.feature.agent.domain.CommandRiskClassifier
 import com.agentdesk.app.feature.agent.domain.ContextManager
 import com.agentdesk.app.feature.agent.domain.PermissionGateway
 import com.agentdesk.app.feature.agent.domain.SystemPromptBuilder
+import com.agentdesk.app.feature.ai.domain.ToolRegistry
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -45,4 +48,8 @@ abstract class AgentModule {
     @Binds
     @Singleton
     abstract fun bindSystemPromptBuilder(builder: DefaultSystemPromptBuilder): SystemPromptBuilder
+
+    @Binds
+    @Singleton
+    abstract fun bindAgentToolRegistry(impl: ToolRegistryImpl): AgentToolRegistry
 }

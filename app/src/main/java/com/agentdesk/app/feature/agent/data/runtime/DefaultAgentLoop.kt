@@ -1,8 +1,8 @@
 package com.agentdesk.app.feature.agent.data.runtime
 
 import com.agentdesk.app.core.common.IdGenerator
-import com.agentdesk.app.feature.agent.data.tools.ToolRegistryImpl
 import com.agentdesk.app.feature.agent.domain.AgentLoop
+import com.agentdesk.app.feature.agent.domain.AgentToolRegistry
 import com.agentdesk.app.feature.agent.domain.ContextManager
 import com.agentdesk.app.feature.agent.domain.PermissionGateway
 import com.agentdesk.app.feature.agent.domain.SystemPromptBuilder
@@ -37,7 +37,7 @@ import javax.inject.Singleton
 class DefaultAgentLoop @Inject constructor(
     private val chatRepository: ChatRepository,
     private val providerRegistry: ProviderRegistry,
-    private val toolRegistry: ToolRegistryImpl,
+    private val toolRegistry: AgentToolRegistry,
     private val systemPromptBuilder: SystemPromptBuilder,
     private val contextManager: ContextManager,
     private val permissionGateway: PermissionGateway,

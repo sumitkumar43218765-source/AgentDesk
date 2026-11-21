@@ -7,33 +7,22 @@ import com.agentdesk.app.feature.agent.data.local.AgentRunEntity
 import com.agentdesk.app.feature.agent.data.runtime.DefaultAgentLoop
 import com.agentdesk.app.feature.agent.data.runtime.DefaultContextManager
 import com.agentdesk.app.feature.agent.data.runtime.RunStateStore
-import com.agentdesk.app.feature.agent.data.tools.AskUserTool
-import com.agentdesk.app.feature.agent.data.tools.BuildApkTool
-import com.agentdesk.app.feature.agent.data.tools.DeletePathTool
-import com.agentdesk.app.feature.agent.data.tools.EditFileTool
-import com.agentdesk.app.feature.agent.data.tools.GitTool
-import com.agentdesk.app.feature.agent.data.tools.InstallApkTool
-import com.agentdesk.app.feature.agent.data.tools.ListDirTool
-import com.agentdesk.app.feature.agent.data.tools.ReadBuildLogTool
-import com.agentdesk.app.feature.agent.data.tools.ReadFileTool
-import com.agentdesk.app.feature.agent.data.tools.SearchFilesTool
-import com.agentdesk.app.feature.agent.data.tools.ShellExecTool
-import com.agentdesk.app.feature.agent.data.tools.ToolRegistryImpl
-import com.agentdesk.app.feature.agent.data.tools.WriteFileTool
 import com.agentdesk.app.feature.agent.domain.AgentTool
+import com.agentdesk.app.feature.agent.domain.AgentToolRegistry
 import com.agentdesk.app.feature.agent.domain.PermissionGateway
 import com.agentdesk.app.feature.agent.domain.SystemPromptBuilder
 import com.agentdesk.app.feature.agent.domain.model.AgentConfig
 import com.agentdesk.app.feature.agent.domain.model.AgentEvent
 import com.agentdesk.app.feature.agent.domain.model.AgentRun
 import com.agentdesk.app.feature.agent.domain.model.PermissionDecision
+import com.agentdesk.app.feature.agent.domain.model.PermissionLevel
 import com.agentdesk.app.feature.agent.domain.model.PermissionRequest
+import com.agentdesk.app.feature.agent.domain.model.RiskLevel
 import com.agentdesk.app.feature.agent.domain.model.RunMode
 import com.agentdesk.app.feature.agent.domain.model.RunStatus
 import com.agentdesk.app.feature.agent.domain.model.ToolContext
 import com.agentdesk.app.feature.agent.domain.model.ToolOutput
 import com.agentdesk.app.feature.agent.domain.model.ToolSummary
-import com.agentdesk.app.feature.agent.domain.usecase.AnswerAskUserUseCase
 import com.agentdesk.app.feature.ai.domain.LlmProvider
 import com.agentdesk.app.feature.ai.domain.ProviderRegistry
 import com.agentdesk.app.feature.ai.domain.model.LlmEvent
@@ -55,13 +44,17 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
+import java.util.UUID
 
 class AgentLoopIntegrationTest {
 
     private val convMap = mutableMapOf<String, Conversation>()
     private val msgMap = mutableMapOf<String, MutableList<ChatMessage>>()
     private val runMap = mutableMapOf<String, AgentRunEntity>()
-    private val idGenerator = IdGenerator()
+
+    private val idGenerator = object : IdGenerator {
+        override fun newId(): String = UUID.randomUUID().toString()
+    }
 
     private val fakeChatRepo = object : ChatRepository {
         override fun observeConversations(): Flow<List<Conversation>> = flowOf(convMap.values.toList())
@@ -153,28 +146,17 @@ class AgentLoopIntegrationTest {
 
         val dummyTool = object : AgentTool {
             override val spec = ToolSpec("dummy_tool", "Dummy", "{}")
-            override val permission = com.agentdesk.app.feature.agent.domain.model.PermissionLevel.AUTO
+            override val permission = PermissionLevel.AUTO
             override suspend fun execute(args: JsonObject, ctx: ToolContext): ToolOutput =
                 ToolOutput("Dummy success", false)
             override fun describe(args: JsonObject): ToolSummary =
-                ToolSummary("Dummy execution", com.agentdesk.app.feature.agent.domain.model.RiskLevel.LOW)
+                ToolSummary("Dummy execution", RiskLevel.LOW)
         }
 
-        val dummyRegistry = object : ToolRegistryImpl(
-            dummyTool as? ListDirTool ?: ListDirTool(fakeFileSystem()),
-            dummyTool as? ReadFileTool ?: ReadFileTool(fakeFileSystem()),
-            dummyTool as? SearchFilesTool ?: SearchFilesTool(fakeFileSystem(), fakeShell()),
-            dummyTool as? WriteFileTool ?: WriteFileTool(fakeFileSystem()),
-            dummyTool as? EditFileTool ?: EditFileTool(fakeFileSystem()),
-            dummyTool as? DeletePathTool ?: DeletePathTool(fakeFileSystem()),
-            dummyTool as? ShellExecTool ?: ShellExecTool(fakeShell(), fakeFileSystem(), fakeClassifier(), idGenerator),
-            dummyTool as? BuildApkTool ?: BuildApkTool(fakeBuildEngine()),
-            dummyTool as? ReadBuildLogTool ?: ReadBuildLogTool(fakeBuildEngine()),
-            dummyTool as? InstallApkTool ?: InstallApkTool(fakeBuildEngine(), fakeInstallApk()),
-            dummyTool as? GitTool ?: GitTool(fakeGitService()),
-            dummyTool as? AskUserTool ?: AskUserTool(AnswerAskUserUseCase())
-        ) {
+        val fakeToolRegistry = object : AgentToolRegistry {
+            override fun getTools(): List<ToolSpec> = listOf(dummyTool.spec)
             override fun getTool(name: String): AgentTool? = if (name == "dummy_tool") dummyTool else null
+            override fun getAllAgentTools(): List<AgentTool> = listOf(dummyTool)
         }
 
         val fakePromptBuilder = object : SystemPromptBuilder {
@@ -191,7 +173,7 @@ class AgentLoopIntegrationTest {
         val defaultAgentLoop = DefaultAgentLoop(
             chatRepository = fakeChatRepo,
             providerRegistry = fakeProviderRegistry,
-            toolRegistry = dummyRegistry,
+            toolRegistry = fakeToolRegistry,
             systemPromptBuilder = fakePromptBuilder,
             contextManager = DefaultContextManager(),
             permissionGateway = fakePermissionGateway,
@@ -223,22 +205,4 @@ class AgentLoopIntegrationTest {
         assertTrue(events.any { it is AgentEvent.ToolFinished })
         assertTrue(events.any { it is AgentEvent.Completed })
     }
-
-    private fun fakeFileSystem(): com.agentdesk.app.feature.projects.domain.repository.ProjectFileSystem =
-        org.mockito.Mockito.mock(com.agentdesk.app.feature.projects.domain.repository.ProjectFileSystem::class.java)
-
-    private fun fakeShell(): com.agentdesk.app.feature.terminal.domain.ShellBackend =
-        org.mockito.Mockito.mock(com.agentdesk.app.feature.terminal.domain.ShellBackend::class.java)
-
-    private fun fakeClassifier(): com.agentdesk.app.feature.agent.domain.CommandRiskClassifier =
-        org.mockito.Mockito.mock(com.agentdesk.app.feature.agent.domain.CommandRiskClassifier::class.java)
-
-    private fun fakeBuildEngine(): com.agentdesk.app.feature.build.domain.BuildEngine =
-        org.mockito.Mockito.mock(com.agentdesk.app.feature.build.domain.BuildEngine::class.java)
-
-    private fun fakeInstallApk(): com.agentdesk.app.feature.build.domain.usecase.InstallApkUseCase =
-        org.mockito.Mockito.mock(com.agentdesk.app.feature.build.domain.usecase.InstallApkUseCase::class.java)
-
-    private fun fakeGitService(): com.agentdesk.app.feature.projects.domain.repository.GitService =
-        org.mockito.Mockito.mock(com.agentdesk.app.feature.projects.domain.repository.GitService::class.java)
 }
