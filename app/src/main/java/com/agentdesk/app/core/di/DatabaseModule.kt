@@ -49,4 +49,14 @@ object DatabaseModule {
     fun provideBuildRunDao(database: AppDatabase): BuildRunDao {
         return database.buildRunDao()
     }
+
+    @Provides
+    fun provideAgentRunDao(database: AppDatabase): com.agentdesk.app.feature.agent.data.local.AgentRunDao {
+        return database.agentRunDao()
+    }
+
+    @Provides
+    fun providePermissionGrantDao(database: AppDatabase): com.agentdesk.app.feature.agent.data.local.PermissionGrantDao {
+        return database.permissionGrantDao()
+    }
 }

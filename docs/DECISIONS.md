@@ -43,3 +43,14 @@
 - **Decision:** Release keystore passwords and aliases are encrypted using `CryptoBox` (Android Keystore AES-256-GCM) and persisted in private preferences; passwords are scrubbed from all build logs and terminal chunks.
 - **Reason:** Prevents credential leaks in history logs, memory dumps, or plain storage while fulfilling security requirements of M4.
 - **Date:** 2026-11-21
+
+
+## D011: Permission Gateway Granular Scoping and Risk Gating
+- **Decision:** Implemented `DefaultPermissionGateway` supporting `AUTO`, `ASK_ONCE` (project scope), `ASK_ALWAYS`, and `DENIED`. Added `Auto-accept edits` mode for code modification (`write_file`, `edit_file`) while preserving approval prompts for high-risk commands and shell executions. Commands classified as `HIGH` risk by `CommandRiskClassifier` always prompt even when project-level grants exist.
+- **Reason:** Balances agent autonomy during multi-step coding iterations with robust security against destructive commands, network escapes, or accidental deletions.
+- **Date:** 2026-11-21
+
+## D012: Loop Guard Runaway Circuit Breaker
+- **Decision:** Implemented `LoopGuard` tracking tool name and argument tuples: 3 identical invocations yield an LLM warning; 5 identical invocations or 5 consecutive execution errors abort the run immediately.
+- **Reason:** Prevents infinite LLM hallucination loops and runaway token drain.
+- **Date:** 2026-11-21

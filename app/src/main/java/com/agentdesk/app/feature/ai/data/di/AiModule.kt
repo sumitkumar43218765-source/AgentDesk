@@ -1,8 +1,8 @@
 package com.agentdesk.app.feature.ai.data.di
 
 import com.agentdesk.app.core.database.AppDatabase
+import com.agentdesk.app.feature.agent.data.tools.ToolRegistryImpl
 import com.agentdesk.app.feature.ai.data.local.DefaultProviderRegistry
-import com.agentdesk.app.feature.ai.data.local.EmptyToolRegistry
 import com.agentdesk.app.feature.ai.data.local.ProviderConfigDao
 import com.agentdesk.app.feature.ai.data.local.RoomProviderConfigRepository
 import com.agentdesk.app.feature.ai.domain.ProviderConfigRepository
@@ -34,7 +34,7 @@ abstract class AiModule {
     @Binds
     @Singleton
     abstract fun bindToolRegistry(
-        registry: EmptyToolRegistry
+        registry: ToolRegistryImpl
     ): ToolRegistry
 
     companion object {

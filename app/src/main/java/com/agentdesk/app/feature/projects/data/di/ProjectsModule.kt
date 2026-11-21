@@ -1,7 +1,7 @@
 package com.agentdesk.app.feature.projects.data.di
 
 import com.agentdesk.app.app.navigation.NavGraphRegistrar
-import com.agentdesk.app.feature.projects.data.DefaultAskAgentAboutFile
+import com.agentdesk.app.feature.agent.data.integration.AskAgentAboutFileImpl
 import com.agentdesk.app.feature.projects.data.RoomProjectRepository
 import com.agentdesk.app.feature.projects.data.fs.DefaultProjectFileSystem
 import com.agentdesk.app.feature.projects.data.git.ShellGitService
@@ -42,7 +42,7 @@ abstract class ProjectsModule {
     @Binds
     @Singleton
     abstract fun bindAskAgentAboutFile(
-        impl: DefaultAskAgentAboutFile
+        impl: AskAgentAboutFileImpl
     ): AskAgentAboutFile
 
     @Binds

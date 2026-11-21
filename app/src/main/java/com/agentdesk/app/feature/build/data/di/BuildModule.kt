@@ -1,6 +1,7 @@
 package com.agentdesk.app.feature.build.data.di
 
 import com.agentdesk.app.app.navigation.NavGraphRegistrar
+import com.agentdesk.app.feature.agent.data.integration.FixWithAiLauncherImpl
 import com.agentdesk.app.feature.build.data.check.HelloWorldSmokeTest
 import com.agentdesk.app.feature.build.data.engine.DefaultBuildEngine
 import com.agentdesk.app.feature.build.data.install.MediaStoreApkExporter
@@ -9,7 +10,6 @@ import com.agentdesk.app.feature.build.data.sign.ShellKeystoreManager
 import com.agentdesk.app.feature.build.domain.ApkExporter
 import com.agentdesk.app.feature.build.domain.ApkInstaller
 import com.agentdesk.app.feature.build.domain.BuildEngine
-import com.agentdesk.app.feature.build.domain.DefaultFixWithAiLauncher
 import com.agentdesk.app.feature.build.domain.FixWithAiLauncher
 import com.agentdesk.app.feature.build.domain.KeystoreManager
 import com.agentdesk.app.feature.build.presentation.BuildNavGraphRegistrar
@@ -39,7 +39,7 @@ abstract class BuildModule {
 
     @Binds
     @Singleton
-    abstract fun bindFixWithAiLauncher(launcher: DefaultFixWithAiLauncher): FixWithAiLauncher
+    abstract fun bindFixWithAiLauncher(launcher: FixWithAiLauncherImpl): FixWithAiLauncher
 
     @Binds
     @Singleton
