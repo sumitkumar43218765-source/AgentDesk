@@ -20,8 +20,8 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.agentdesk.app.core.designsystem.component.StatusChip
-import com.agentdesk.app.core.designsystem.component.StatusLevel
+import com.agentdesk.app.core.ui.components.StatusChip
+import com.agentdesk.app.core.ui.components.StatusLevel
 import com.agentdesk.app.feature.agent.domain.model.PermissionDecision
 import com.agentdesk.app.feature.agent.domain.model.PermissionRequest
 import com.agentdesk.app.feature.agent.domain.model.RiskLevel
@@ -59,6 +59,7 @@ fun ApprovalCard(
                     RiskLevel.HIGH -> StatusLevel.ERROR
                     RiskLevel.MEDIUM -> StatusLevel.WARNING
                     RiskLevel.LOW -> StatusLevel.INFO
+                    RiskLevel.DENIED -> StatusLevel.ERROR
                 }
                 StatusChip(text = "${request.summary.risk} RISK", level = riskLevel)
             }

@@ -45,17 +45,17 @@ class InstallApkTool @Inject constructor(
             buildEngine.getRun(buildId)
         } else {
             val history = buildEngine.observeHistory(ctx.projectId).firstOrNull() ?: emptyList()
-            history.firstOrNull { it.status == BuildStatus.SUCCESS && !it.apkPath.isNullOrBlank() }
+            history.firstOrNull { it.status == BuildStatus.SUCCESS && !it.apkHostPath.isNullOrBlank() }
         }
 
-        if (targetRun == null || targetRun.apkPath.isNullOrBlank()) {
+        if (targetRun == null || targetRun.apkHostPath.isNullOrBlank()) {
             return ToolOutput(
                 text = "No successful APK build found to install. Run build_apk first.",
                 isError = true
             )
         }
 
-        return when (val result = installApkUseCase(targetRun.apkPath)) {
+        return when (val result = installApkUseCase(targetRun.apkHostPath)) {
             is AppResult.Success -> {
                 ToolOutput(
                     text = "APK installation initiated: ${result.value}",

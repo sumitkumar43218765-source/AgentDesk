@@ -52,7 +52,7 @@ class GitTool @Inject constructor(
                 when (val res = gitService.status(ctx.projectId)) {
                     is AppResult.Success -> {
                         val st = res.value
-                        val text = "Branch: ${st.branch}\nClean: ${st.isClean}\nModified: ${st.modifiedFiles.joinToString()}\nUntracked: ${st.untrackedFiles.joinToString()}"
+                        val text = "Branch: ${st.branch}\nClean: ${st.clean}\nStaged: ${st.stagedCount}\nUnstaged: ${st.unstagedCount}\nUntracked: ${st.untrackedCount}"
                         ToolOutput(text = text, isError = false)
                     }
                     is AppResult.Failure -> ToolOutput(text = "Git status error: ${res.error.message}", isError = true)

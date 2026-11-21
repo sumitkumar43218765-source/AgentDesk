@@ -104,6 +104,7 @@ class DefaultAgentLoop @Inject constructor(
             var stopReason: StopReason? = null
             var stepTokens = 0
 
+            var streamError: String? = null
             try {
                 provider.stream(request).collect { event ->
                     when (event) {
@@ -122,10 +123,8 @@ class DefaultAgentLoop @Inject constructor(
                             stopReason = event.stopReason
                         }
                         is LlmEvent.Error -> {
+                            streamError = event.error.message
                             onEvent(AgentEvent.Error(event.error.message, fatal = true))
-                            currentRun = currentRun.copy(status = RunStatus.FAILED)
-                            runStateStore.saveRun(currentRun)
-                            return currentRun
                         }
                         else -> Unit
                     }
@@ -139,6 +138,12 @@ class DefaultAgentLoop @Inject constructor(
                 }
                 val msg = "LLM streaming failed: ${e.message}"
                 onEvent(AgentEvent.Error(msg, fatal = true))
+                currentRun = currentRun.copy(status = RunStatus.FAILED)
+                runStateStore.saveRun(currentRun)
+                return currentRun
+            }
+
+            if (streamError != null) {
                 currentRun = currentRun.copy(status = RunStatus.FAILED)
                 runStateStore.saveRun(currentRun)
                 return currentRun

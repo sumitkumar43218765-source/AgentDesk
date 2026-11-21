@@ -23,8 +23,8 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.agentdesk.app.core.designsystem.component.StatusChip
-import com.agentdesk.app.core.designsystem.component.StatusLevel
+import com.agentdesk.app.core.ui.components.StatusChip
+import com.agentdesk.app.core.ui.components.StatusLevel
 
 @Composable
 fun ToolCallCard(

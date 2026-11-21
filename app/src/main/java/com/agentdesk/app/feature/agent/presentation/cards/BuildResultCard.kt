@@ -16,8 +16,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.agentdesk.app.core.designsystem.component.StatusChip
-import com.agentdesk.app.core.designsystem.component.StatusLevel
+import com.agentdesk.app.core.ui.components.StatusChip
+import com.agentdesk.app.core.ui.components.StatusLevel
 
 @Composable
 fun BuildResultCard(

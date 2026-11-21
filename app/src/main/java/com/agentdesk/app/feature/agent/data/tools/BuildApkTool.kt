@@ -57,25 +57,29 @@ class BuildApkTool @Inject constructor(
             )
         }
 
+        val durationMs = (finalRun.finishedAt ?: System.currentTimeMillis()) - finalRun.startedAt
         return if (finalRun.status == BuildStatus.SUCCESS) {
-            val apkPath = finalRun.apkPath ?: ""
+            val apkPath = finalRun.apkHostPath ?: ""
             val artifact = ArtifactRef(
                 id = finalRun.id,
-                type = "apk",
-                path = apkPath
+                name = "app-${finalRun.variant.name.lowercase()}.apk",
+                path = apkPath,
+                type = "apk"
             )
             ToolOutput(
                 text = """
                     <build_id>${finalRun.id}</build_id>
                     <status>SUCCESS</status>
                     APK built successfully: $apkPath
-                    Duration: ${finalRun.durationMs}ms
+                    Duration: ${durationMs}ms
                 """.trimIndent(),
                 isError = false,
                 artifacts = listOf(artifact)
             )
         } else {
-            val rawError = finalRun.distilledSummary ?: "Build failed with exit code ${finalRun.exitCode}"
+            val rawError = finalRun.summary.diagnostics.joinToString("\n") {
+                "${it.severity}: ${it.message} (${it.file}:${it.line})"
+            }.ifBlank { "Build failed at step ${finalRun.summary.failedStep ?: "unknown"}" }
             val distilled = LogDistiller.distill(rawError, maxChars = 6000)
             ToolOutput(
                 text = """

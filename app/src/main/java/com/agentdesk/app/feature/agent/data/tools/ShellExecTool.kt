@@ -13,7 +13,6 @@ import com.agentdesk.app.feature.projects.domain.repository.ProjectFileSystem
 import com.agentdesk.app.feature.terminal.domain.ShellBackend
 import com.agentdesk.app.feature.terminal.domain.ShellRequest
 import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.intOrNull
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.longOrNull
 import javax.inject.Inject
@@ -23,7 +22,8 @@ import javax.inject.Singleton
 class ShellExecTool @Inject constructor(
     private val shellBackend: ShellBackend,
     private val projectFileSystem: ProjectFileSystem,
-    private val riskClassifier: CommandRiskClassifier
+    private val riskClassifier: CommandRiskClassifier,
+    private val idGenerator: IdGenerator
 ) : AgentTool {
 
     override val spec = ToolSpec(
@@ -67,7 +67,7 @@ class ShellExecTool @Inject constructor(
             command = command,
             cwd = targetCwd,
             timeoutMs = timeoutSec * 1000L,
-            executionId = IdGenerator.newId()
+            executionId = idGenerator.newId()
         )
 
         val result = shellBackend.runToCompletion(request)

@@ -167,7 +167,7 @@ class AgentLoopIntegrationTest {
             dummyTool as? WriteFileTool ?: WriteFileTool(fakeFileSystem()),
             dummyTool as? EditFileTool ?: EditFileTool(fakeFileSystem()),
             dummyTool as? DeletePathTool ?: DeletePathTool(fakeFileSystem()),
-            dummyTool as? ShellExecTool ?: ShellExecTool(fakeShell(), fakeFileSystem(), fakeClassifier()),
+            dummyTool as? ShellExecTool ?: ShellExecTool(fakeShell(), fakeFileSystem(), fakeClassifier(), idGenerator),
             dummyTool as? BuildApkTool ?: BuildApkTool(fakeBuildEngine()),
             dummyTool as? ReadBuildLogTool ?: ReadBuildLogTool(fakeBuildEngine()),
             dummyTool as? InstallApkTool ?: InstallApkTool(fakeBuildEngine(), fakeInstallApk()),
