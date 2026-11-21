@@ -29,6 +29,12 @@ sealed interface Routes {
     data object Projects : Routes
 
     @Serializable
+    data class ProjectDetail(val id: String) : Routes
+
+    @Serializable
+    data class FileViewer(val projectId: String, val path: String, val line: Int? = null) : Routes
+
+    @Serializable
     data object Setup : Routes
 
     @Serializable

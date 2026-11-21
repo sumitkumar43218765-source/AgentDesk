@@ -28,3 +28,8 @@
 - **Decision:** Tool state is cached in Room `ToolInstallStateEntity`, but filesystem markers (`setup/done/<id>@<version>`) combined with actual binary `verify` execution serve as source of truth, reconciled on app launch.
 - **Reason:** Complies with PRD M2 architecture; guarantees process deaths or database clearing never cause redundant package re-downloads when binaries are already installed.
 - **Date:** 2026-11-20
+
+## D008: Host-side Direct File IO & Guest Proot Storage Parity
+- **Decision:** Projects are stored at `PathProvider.projectsRoot/<slug>`, which maps directly to guest proot `/root/projects/<slug>`. The app UI and agent runtime perform direct host filesystem IO while tools and compilers execute commands at the corresponding guest path.
+- **Reason:** Enables fast native Linux filesystem semantics (symlinks, executable bits, case sensitivity) required by `git`, `ecj`, `aapt2`, and Android build tools, while avoiding Shared Storage SAF performance overhead.
+- **Date:** 2026-11-20
