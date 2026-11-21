@@ -9,7 +9,10 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.History
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -23,7 +26,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import com.agentdesk.app.core.ui.components.ErrorBanner
 import com.agentdesk.app.core.ui.theme.Spacing
 import com.agentdesk.app.feature.build.domain.model.BuildVariant
 import com.agentdesk.app.feature.build.presentation.build.components.BuildActionsBar
@@ -91,11 +93,23 @@ fun BuildScreen(
             verticalArrangement = Arrangement.spacedBy(Spacing.medium)
         ) {
             if (uiState.errorMessage != null) {
-                ErrorBanner(
-                    message = uiState.errorMessage,
-                    onDismiss = onClearStatus,
+                Card(
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer),
                     modifier = Modifier.fillMaxWidth()
-                )
+                ) {
+                    androidx.compose.foundation.layout.Row(
+                        modifier = Modifier.padding(Spacing.medium),
+                        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+                    ) {
+                        Icon(Icons.Default.Error, contentDescription = null, tint = MaterialTheme.colorScheme.error)
+                        androidx.compose.foundation.layout.Spacer(modifier = Modifier.width(Spacing.small))
+                        Text(
+                            text = uiState.errorMessage,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onErrorContainer
+                        )
+                    }
+                }
             }
 
             BuildActionsBar(

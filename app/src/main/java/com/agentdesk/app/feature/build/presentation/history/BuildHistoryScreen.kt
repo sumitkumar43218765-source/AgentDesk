@@ -159,7 +159,7 @@ private fun BuildRunCard(
                         BuildStatus.CANCELLED -> StatusLevel.WARNING to "CANCELLED"
                         BuildStatus.RUNNING -> StatusLevel.INFO to "RUNNING"
                     }
-                    StatusChip(status = level, label = label)
+                    StatusChip(text = label, level = level)
                     Spacer(modifier = Modifier.width(Spacing.small))
                     Text(
                         text = run.variant.name,
