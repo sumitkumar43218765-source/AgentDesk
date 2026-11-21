@@ -1,26 +1,20 @@
 package com.agentdesk.app.feature.terminal.presentation
 
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import com.agentdesk.app.core.ui.components.AppScaffold
 import com.agentdesk.app.core.ui.components.AppTopBar
+import com.agentdesk.app.feature.terminal.data.TermuxSessionHandle
 import com.agentdesk.app.feature.terminal.presentation.components.ExtraKeysBar
 import com.agentdesk.app.feature.terminal.presentation.components.SessionTabs
 import com.agentdesk.app.feature.terminal.presentation.components.TerminalViewHost
@@ -31,15 +25,16 @@ fun TerminalScreen(
     onNavigateBack: () -> Unit
 ) {
     val state by viewModel.state.collectAsState()
-    val activeSession = state.sessions.getOrNull(state.selectedSessionIndex) ?: state.sessions.first()
+    val activeSession = state.sessions.getOrNull(state.selectedSessionIndex)
+    val termSession = (activeSession?.handle as? TermuxSessionHandle)?.terminalSession
 
     AppScaffold(
         topBar = {
             AppTopBar(
-                title = "Terminal",
+                title = activeSession?.title ?: "Terminal",
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
+                        Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
                 },
                 actions = {
@@ -64,35 +59,16 @@ fun TerminalScreen(
             )
 
             TerminalViewHost(
-                output = activeSession.output,
+                terminalSession = termSession,
+                terminalViewClient = viewModel.viewClient,
                 modifier = Modifier.weight(1f)
             )
 
             ExtraKeysBar(
-                onKeyPress = { viewModel.onEvent(TerminalEvent.ExtraKeyPressed(it)) }
+                onKeyPress = { viewModel.onEvent(TerminalEvent.ExtraKeyPressed(it)) },
+                isCtrlActive = state.isCtrlActive,
+                isAltActive = state.isAltActive
             )
-
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 8.dp, vertical = 4.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                OutlinedTextField(
-                    value = state.commandInput,
-                    onValueChange = { viewModel.onEvent(TerminalEvent.InputChanged(it)) },
-                    placeholder = { Text("Enter shell command…") },
-                    modifier = Modifier.weight(1f),
-                    singleLine = true
-                )
-
-                IconButton(
-                    onClick = { viewModel.onEvent(TerminalEvent.ExecuteCommand) },
-                    enabled = !state.isRunning && state.commandInput.isNotBlank()
-                ) {
-                    Icon(imageVector = Icons.AutoMirrored.Filled.Send, contentDescription = "Execute")
-                }
-            }
         }
     }
 }

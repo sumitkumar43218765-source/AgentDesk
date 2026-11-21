@@ -11,7 +11,8 @@ import android.os.Build
 import android.os.IBinder
 import android.os.PowerManager
 import androidx.core.app.NotificationCompat
-import com.agentdesk.app.R
+import com.termux.terminal.TerminalSession
+import java.util.concurrent.CopyOnWriteArrayList
 
 class TermuxService : Service() {
 
@@ -27,6 +28,7 @@ class TermuxService : Service() {
 
     private val binder = LocalBinder()
     private var wakeLock: PowerManager.WakeLock? = null
+    val sessions: MutableList<TerminalSession> = CopyOnWriteArrayList()
 
     override fun onCreate() {
         super.onCreate()
@@ -41,12 +43,29 @@ class TermuxService : Service() {
         return START_NOT_STICKY
     }
 
+    fun addSession(session: TerminalSession) {
+        if (!sessions.contains(session)) {
+            sessions.add(session)
+        }
+        acquireWakeLock()
+    }
+
+    fun removeSession(session: TerminalSession) {
+        sessions.remove(session)
+        try {
+            session.finishIfRunning()
+        } catch (ignored: Exception) {}
+        if (sessions.isEmpty()) {
+            releaseWakeLock()
+        }
+    }
+
     fun acquireWakeLock() {
         if (wakeLock == null) {
             val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
             wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "AgentDesk:TermuxWakeLock")
         }
-        wakeLock?.acquire(10 * 60 * 1000L /*10 minutes*/)
+        wakeLock?.acquire(10 * 60 * 1000L)
     }
 
     fun releaseWakeLock() {
@@ -56,6 +75,12 @@ class TermuxService : Service() {
     }
 
     override fun onDestroy() {
+        for (session in sessions) {
+            try {
+                session.finishIfRunning()
+            } catch (ignored: Exception) {}
+        }
+        sessions.clear()
         releaseWakeLock()
         super.onDestroy()
     }

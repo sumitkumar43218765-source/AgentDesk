@@ -18,6 +18,8 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun ExtraKeysBar(
     onKeyPress: (String) -> Unit,
+    isCtrlActive: Boolean = false,
+    isAltActive: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     val keys = listOf("ESC", "TAB", "CTRL", "ALT", "/", "-", "|", "~", "▲", "▼", "◀", "▶")
@@ -25,14 +27,21 @@ fun ExtraKeysBar(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .background(Color(0xFF202020))
+            .background(Color(0xFF1E1E1E))
             .horizontalScroll(rememberScrollState())
             .padding(horizontal = 4.dp, vertical = 2.dp)
     ) {
         for (key in keys) {
+            val isHighlighted = (key == "CTRL" && isCtrlActive) || (key == "ALT" && isAltActive)
+            val btnColor = if (isHighlighted) MaterialTheme.colorScheme.primaryContainer else Color.Transparent
+            val contentColor = if (isHighlighted) MaterialTheme.colorScheme.onPrimaryContainer else Color.White
+
             TextButton(
                 onClick = { onKeyPress(key) },
-                colors = ButtonDefaults.textButtonColors(contentColor = Color.White),
+                colors = ButtonDefaults.textButtonColors(
+                    containerColor = btnColor,
+                    contentColor = contentColor
+                ),
                 modifier = Modifier.padding(horizontal = 2.dp)
             ) {
                 Text(text = key, style = MaterialTheme.typography.labelMedium)

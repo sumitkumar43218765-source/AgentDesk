@@ -1,36 +1,45 @@
 package com.agentdesk.app.feature.terminal.data
 
+import android.content.Context
 import com.agentdesk.app.core.common.AppError
 import com.agentdesk.app.feature.terminal.domain.PathProvider
 import com.agentdesk.app.feature.terminal.domain.SessionHandle
 import com.agentdesk.app.feature.terminal.domain.SessionRequest
 import com.agentdesk.app.feature.terminal.domain.ShellBackend
+import com.agentdesk.app.feature.terminal.domain.ShellEnvironment
 import com.agentdesk.app.feature.terminal.domain.ShellEvent
 import com.agentdesk.app.feature.terminal.domain.ShellRequest
 import com.agentdesk.app.feature.terminal.domain.ShellResult
+import com.termux.terminal.TerminalSession
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 import java.io.BufferedReader
 import java.io.File
 import java.io.InputStreamReader
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.concurrent.thread
 
 @Singleton
 class EmbeddedShellBackend @Inject constructor(
+    @ApplicationContext private val context: Context,
     private val commandBuilder: ProotCommandBuilder,
     private val executionRegistry: ExecutionRegistry,
     private val outputBuffer: OutputBuffer,
-    private val pathProvider: PathProvider
+    private val pathProvider: PathProvider,
+    private val termuxServiceConnection: TermuxServiceConnection
 ) : ShellBackend {
+
+    init {
+        termuxServiceConnection.bind()
+    }
 
     override suspend fun isReady(): Boolean = true
 
@@ -49,7 +58,6 @@ class EmbeddedShellBackend @Inject constructor(
             }
         }
 
-        // Add custom environment variables
         val processEnv = processBuilder.environment()
         for ((k, v) in request.env) {
             processEnv[k] = v
@@ -162,20 +170,89 @@ class EmbeddedShellBackend @Inject constructor(
     }
 
     override fun openSession(request: SessionRequest): SessionHandle {
-        val sessionId = "session_${System.currentTimeMillis()}"
-        val isRunningState = MutableStateFlow(true)
+        val sessionId = "session_${UUID.randomUUID()}"
+        pathProvider.termuxHome.mkdirs()
+        pathProvider.tmpDir.mkdirs()
 
-        return object : SessionHandle {
-            override val id: String = sessionId
-            override val isRunning: StateFlow<Boolean> = isRunningState
+        val shellPath: String
+        val shellArgs: Array<String>
+        val shellEnv: Array<String>
+        val cwd: String
 
-            override fun write(text: String) {
-                // Interactive PTY write
-            }
+        val isProotReady = request.environment == ShellEnvironment.PROOT_UBUNTU &&
+                File(pathProvider.termuxPrefix, "bin/proot").exists() &&
+                pathProvider.rootfsDir.exists()
 
-            override fun close() {
-                isRunningState.value = false
-            }
+        if (isProotReady) {
+            shellPath = File(pathProvider.termuxPrefix, "bin/proot").absolutePath
+            val prootCmd = commandBuilder.buildCommandLine(
+                ShellRequest(
+                    command = request.command ?: "/bin/bash -l",
+                    cwd = request.cwd ?: "/root",
+                    environment = ShellEnvironment.PROOT_UBUNTU,
+                    executionId = sessionId
+                )
+            )
+            shellArgs = prootCmd.drop(1).toTypedArray()
+            cwd = pathProvider.rootfsHome.absolutePath
+            shellEnv = arrayOf(
+                "HOME=/root",
+                "TERM=xterm-256color",
+                "COLORTERM=truecolor",
+                "LANG=C.UTF-8"
+            )
+        } else if (File(pathProvider.termuxPrefix, "bin/bash").exists()) {
+            shellPath = File(pathProvider.termuxPrefix, "bin/bash").absolutePath
+            shellArgs = if (request.command != null) arrayOf("-lc", request.command) else arrayOf("-l")
+            cwd = request.cwd?.let { pathProvider.guestToHost(it).absolutePath } ?: pathProvider.termuxHome.absolutePath
+            shellEnv = arrayOf(
+                "HOME=${pathProvider.termuxHome.absolutePath}",
+                "PREFIX=${pathProvider.termuxPrefix.absolutePath}",
+                "PATH=${pathProvider.termuxPrefix.absolutePath}/bin:${pathProvider.termuxPrefix.absolutePath}/bin/applets:/system/bin",
+                "TERM=xterm-256color",
+                "COLORTERM=truecolor",
+                "LANG=en_US.UTF-8",
+                "TMPDIR=${pathProvider.tmpDir.absolutePath}"
+            )
+        } else {
+            shellPath = "/system/bin/sh"
+            shellArgs = if (request.command != null) arrayOf("-c", request.command) else arrayOf("-i")
+            cwd = pathProvider.termuxHome.absolutePath
+            val path = "${pathProvider.termuxPrefix.absolutePath}/bin:/system/bin:/system/xbin"
+            shellEnv = arrayOf(
+                "HOME=${pathProvider.termuxHome.absolutePath}",
+                "PATH=$path",
+                "TERM=xterm-256color",
+                "COLORTERM=truecolor",
+                "PS1=agentdesk:\\w\\$ "
+            )
         }
+
+        var handle: TermuxSessionHandle? = null
+
+        val client = DefaultTerminalSessionClient(
+            context = context,
+            onTitleUpdate = { _, _ -> },
+            onSessionExit = {
+                handle?.markFinished()
+            }
+        )
+
+        val terminalSession = TerminalSession(
+            shellPath,
+            cwd,
+            shellArgs,
+            shellEnv,
+            2000,
+            client
+        )
+
+        termuxServiceConnection.service.value?.addSession(terminalSession)
+
+        handle = TermuxSessionHandle(sessionId, terminalSession) {
+            termuxServiceConnection.service.value?.removeSession(terminalSession)
+        }
+
+        return handle
     }
 }
