@@ -95,9 +95,12 @@ class ShellKeystoreManager @Inject constructor(
                 }
             } ?: return AppResult.Failure(AppError.Storage("Unable to open source keystore stream"))
 
-            cryptoBox.encryptAndStore(PREF_KEY_RELEASE_ALIAS, alias)
-            cryptoBox.encryptAndStore(PREF_KEY_RELEASE_STOREPASS, storePass)
-            cryptoBox.encryptAndStore(PREF_KEY_RELEASE_KEYPASS, keyPass)
+            val prefs = context.getSharedPreferences("keystore_secrets", Context.MODE_PRIVATE)
+            prefs.edit()
+                .putString(PREF_KEY_RELEASE_ALIAS, cryptoBox.encrypt(alias))
+                .putString(PREF_KEY_RELEASE_STOREPASS, cryptoBox.encrypt(storePass))
+                .putString(PREF_KEY_RELEASE_KEYPASS, cryptoBox.encrypt(keyPass))
+                .apply()
 
             AppResult.Success(
                 SigningConfig(
@@ -121,9 +124,18 @@ class ShellKeystoreManager @Inject constructor(
                 if (!hostFile.exists()) {
                     return AppResult.Failure(AppError.Build("Release keystore not found. Import a release keystore first."))
                 }
-                val alias = cryptoBox.retrieveAndDecrypt(PREF_KEY_RELEASE_ALIAS)
-                val storePass = cryptoBox.retrieveAndDecrypt(PREF_KEY_RELEASE_STOREPASS)
-                val keyPass = cryptoBox.retrieveAndDecrypt(PREF_KEY_RELEASE_KEYPASS)
+                val prefs = context.getSharedPreferences("keystore_secrets", Context.MODE_PRIVATE)
+                val encAlias = prefs.getString(PREF_KEY_RELEASE_ALIAS, null)
+                val encStorePass = prefs.getString(PREF_KEY_RELEASE_STOREPASS, null)
+                val encKeyPass = prefs.getString(PREF_KEY_RELEASE_KEYPASS, null)
+
+                if (encAlias == null || encStorePass == null || encKeyPass == null) {
+                    return AppResult.Failure(AppError.Build("Release keystore credentials missing."))
+                }
+
+                val alias = cryptoBox.decrypt(encAlias)
+                val storePass = cryptoBox.decrypt(encStorePass)
+                val keyPass = cryptoBox.decrypt(encKeyPass)
 
                 if (alias.isNullOrBlank() || storePass.isNullOrBlank() || keyPass.isNullOrBlank()) {
                     return AppResult.Failure(AppError.Build("Release keystore credentials missing or corrupted."))

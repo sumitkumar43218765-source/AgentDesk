@@ -208,7 +208,7 @@ class DefaultBuildEngine @Inject constructor(
             if (overallStatus == BuildStatus.SUCCESS) {
                 val checkpointRes = gitService.checkpoint(project.slug, "build $buildId ok")
                 if (checkpointRes is AppResult.Success) {
-                    gitCommitSha = checkpointRes.value
+                    gitCommitSha = checkpointRes.value.sha
                 }
             }
 

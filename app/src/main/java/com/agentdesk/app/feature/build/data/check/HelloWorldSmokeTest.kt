@@ -53,7 +53,7 @@ class HelloWorldSmokeTest @Inject constructor(
                 targetDir = tempDir,
                 template = TemplateId.HELLO_JAVA,
                 packageName = "com.agentdesk.smoketest",
-                appName = "SmokeTest"
+                appLabel = "SmokeTest"
             )
             if (popRes is AppResult.Failure) {
                 return CheckResult.Fail("Template population failed: ${popRes.error.message}")
