@@ -1,5 +1,6 @@
 package com.agentdesk.app.feature.settings
 
+import com.agentdesk.app.core.common.AppError
 import com.agentdesk.app.core.common.AppResult
 import com.agentdesk.app.feature.build.data.local.BuildRunDao
 import com.agentdesk.app.feature.build.data.local.BuildRunEntity
@@ -10,7 +11,6 @@ import com.agentdesk.app.feature.projects.domain.model.ExportOptions
 import com.agentdesk.app.feature.projects.domain.model.ExportTarget
 import com.agentdesk.app.feature.projects.domain.model.ImportSource
 import com.agentdesk.app.feature.projects.domain.model.Project
-import com.agentdesk.app.feature.projects.domain.model.ProjectType
 import com.agentdesk.app.feature.projects.domain.model.TemplateId
 import com.agentdesk.app.feature.projects.domain.repository.ProjectRepository
 import com.agentdesk.app.feature.settings.domain.usecase.WipeWorkspaceUseCase
@@ -36,11 +36,11 @@ class WipeWorkspaceTest {
         val projects = mutableListOf<String>()
         val fakeProjectRepo = object : ProjectRepository {
             override fun observeProjects(): Flow<List<Project>> = flowOf(emptyList())
-            override suspend fun create(name: String, template: TemplateId, packageName: String?) = AppResult.Failure(com.agentdesk.app.core.common.AppError.Validation("err"))
-            override suspend fun import(source: ImportSource) = AppResult.Failure(com.agentdesk.app.core.common.AppError.Validation("err"))
-            override suspend fun export(projectId: String, target: ExportTarget, options: ExportOptions) = AppResult.Failure(com.agentdesk.app.core.common.AppError.Validation("err"))
-            override suspend fun rename(projectId: String, newName: String) = AppResult.Failure(com.agentdesk.app.core.common.AppError.Validation("err"))
-            override suspend fun duplicate(projectId: String) = AppResult.Failure(com.agentdesk.app.core.common.AppError.Validation("err"))
+            override suspend fun create(name: String, template: TemplateId, packageName: String?) = AppResult.Failure(AppError.Storage("err"))
+            override suspend fun import(source: ImportSource) = AppResult.Failure(AppError.Storage("err"))
+            override suspend fun export(projectId: String, target: ExportTarget, options: ExportOptions) = AppResult.Failure(AppError.Storage("err"))
+            override suspend fun rename(projectId: String, newName: String) = AppResult.Failure(AppError.Storage("err"))
+            override suspend fun duplicate(projectId: String) = AppResult.Failure(AppError.Storage("err"))
             override suspend fun delete(projectId: String): AppResult<Unit> {
                 projects.remove(projectId)
                 return AppResult.Success(Unit)
@@ -106,23 +106,19 @@ class WipeWorkspaceTest {
             id = "proj-1",
             name = "Project 1",
             slug = "project-1",
+            template = TemplateId.EMPTY_ACTIVITY,
             packageName = "com.test.p1",
-            type = ProjectType.STANDARD_EMPTY,
             createdAt = 1000L,
-            lastModifiedAt = 2000L,
-            gitAuthorName = "User",
-            gitAuthorEmail = "user@test.com",
-            buildCount = 1,
-            lastSuccessfulBuildAt = null
+            lastModifiedAt = 2000L
         )
 
         val fakeProjectRepo = object : ProjectRepository {
             override fun observeProjects(): Flow<List<Project>> = flowOf(listOf(project1))
-            override suspend fun create(name: String, template: TemplateId, packageName: String?) = AppResult.Failure(com.agentdesk.app.core.common.AppError.Validation("err"))
-            override suspend fun import(source: ImportSource) = AppResult.Failure(com.agentdesk.app.core.common.AppError.Validation("err"))
-            override suspend fun export(projectId: String, target: ExportTarget, options: ExportOptions) = AppResult.Failure(com.agentdesk.app.core.common.AppError.Validation("err"))
-            override suspend fun rename(projectId: String, newName: String) = AppResult.Failure(com.agentdesk.app.core.common.AppError.Validation("err"))
-            override suspend fun duplicate(projectId: String) = AppResult.Failure(com.agentdesk.app.core.common.AppError.Validation("err"))
+            override suspend fun create(name: String, template: TemplateId, packageName: String?) = AppResult.Failure(AppError.Storage("err"))
+            override suspend fun import(source: ImportSource) = AppResult.Failure(AppError.Storage("err"))
+            override suspend fun export(projectId: String, target: ExportTarget, options: ExportOptions) = AppResult.Failure(AppError.Storage("err"))
+            override suspend fun rename(projectId: String, newName: String) = AppResult.Failure(AppError.Storage("err"))
+            override suspend fun duplicate(projectId: String) = AppResult.Failure(AppError.Storage("err"))
             override suspend fun delete(projectId: String): AppResult<Unit> {
                 deletedProjects.add(projectId)
                 return AppResult.Success(Unit)
@@ -135,9 +131,10 @@ class WipeWorkspaceTest {
             id = "conv-1",
             projectId = "proj-1",
             title = "Test Chat",
+            providerId = "anthropic",
+            model = "claude-3-5-sonnet",
             createdAt = 1000L,
-            updatedAt = 2000L,
-            activeRunId = null
+            updatedAt = 2000L
         )
 
         val fakeChatRepo = object : ChatRepository {
