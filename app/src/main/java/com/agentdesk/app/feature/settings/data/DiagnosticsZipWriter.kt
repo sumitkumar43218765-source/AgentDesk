@@ -28,8 +28,9 @@ class DiagnosticsZipWriter @Inject constructor(
             outFile.parentFile?.mkdirs()
             ZipOutputStream(FileOutputStream(outFile)).use { zos ->
                 // 1. Write environment summary
+                val redactedSummary = logRedactor.redact(bundle.environmentSummary)
                 zos.putNextEntry(ZipEntry("environment_summary.txt"))
-                zos.write(bundle.environmentSummary.toByteArray(Charsets.UTF_8))
+                zos.write(redactedSummary.toByteArray(Charsets.UTF_8))
                 zos.closeEntry()
 
                 // 2. Write redacted log files
