@@ -171,9 +171,9 @@ class TerminalViewModel @Inject constructor(
         val transcript = activeHandle.getTranscriptText()
         setState { copy(isContextMenuOpen = false) }
         if (transcript.isNotBlank()) {
-            sendEffect(TerminalEffect.ShareText(transcript))
+            emitEffect(TerminalEffect.ShareText(transcript))
         } else {
-            sendEffect(TerminalEffect.ShowMessage("Transcript is empty"))
+            emitEffect(TerminalEffect.ShowMessage("Transcript is empty"))
         }
     }
 

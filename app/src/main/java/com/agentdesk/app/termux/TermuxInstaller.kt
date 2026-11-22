@@ -35,7 +35,7 @@ object TermuxInstaller {
             stagingDir.mkdirs()
 
             val symlinks = mutableListOf<Pair<String, String>>()
-            val buffer = byte[8192]
+            val buffer = ByteArray(8192)
 
             ZipInputStream(zipInputStream).use { zis ->
                 var entry: ZipEntry?
@@ -114,7 +114,7 @@ object TermuxInstaller {
         } catch (e: Exception) {
             Log.e(TAG, "Bootstrap extraction failed", e)
             stagingDir.deleteRecursively()
-            return AppResult.Error(AppError.Storage("Bootstrap extraction failed: ${e.message}"))
+            return AppResult.Failure(AppError.Storage("Bootstrap extraction failed: ${e.message}"))
         }
     }
 }

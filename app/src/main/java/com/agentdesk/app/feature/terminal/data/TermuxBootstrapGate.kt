@@ -52,7 +52,7 @@ class TermuxBootstrapGate @Inject constructor(
         pathProvider.projectsRoot.mkdirs()
         pathProvider.tmpDir.mkdirs()
 
-        // Check for bundled bootstrap zip asset or libtermux-bootstrap.so
+        // Check for bundled bootstrap zip asset
         val stagingDir = File(context.filesDir, "usr-staging")
         val assetBootstrap = try {
             context.assets.open("bootstrap-aarch64.zip")
@@ -71,7 +71,7 @@ class TermuxBootstrapGate @Inject constructor(
                 }
             )
 
-            if (result is AppResult.Error) {
+            if (result is AppResult.Failure) {
                 _status.value = EnvironmentStatus.Failed(result.error)
                 return result
             }

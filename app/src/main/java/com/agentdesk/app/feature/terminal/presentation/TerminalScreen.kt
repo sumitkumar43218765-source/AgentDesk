@@ -93,7 +93,7 @@ fun TerminalScreen(
 
     // Collect UI Effects
     LaunchedEffect(Unit) {
-        viewModel.effect.collect { effect ->
+        viewModel.effects.collect { effect ->
             when (effect) {
                 is TerminalEffect.ShareText -> {
                     val sendIntent = Intent().apply {
