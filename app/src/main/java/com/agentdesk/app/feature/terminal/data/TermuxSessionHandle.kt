@@ -23,6 +23,14 @@ class TermuxSessionHandle(
         terminalSession.write(text)
     }
 
+    fun getTranscriptText(): String {
+        return try {
+            terminalSession.emulator?.screen?.transcriptText ?: ""
+        } catch (e: Exception) {
+            ""
+        }
+    }
+
     override fun close() {
         _isRunning.value = false
         try {

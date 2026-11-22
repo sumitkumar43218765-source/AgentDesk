@@ -22,9 +22,22 @@ class DefaultTerminalViewClient @Inject constructor(
     private var altActive: Boolean = false
     private var currentTextSizeSp: Float = 14f
     var onFontSizeChanged: ((Int) -> Unit)? = null
+    var onLongPressListener: (() -> Unit)? = null
 
     fun attachView(view: TerminalView) {
         this.terminalView = view
+    }
+
+    fun toggleSoftKeyboard() {
+        terminalView?.let { view ->
+            val imm = context.getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager ?: return
+            if (view.isFocused) {
+                imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, 0)
+            } else {
+                view.requestFocus()
+                imm.showSoftInput(view, InputMethodManager.SHOW_IMPLICIT)
+            }
+        }
     }
 
     fun setControlActive(active: Boolean) {
@@ -68,7 +81,10 @@ class DefaultTerminalViewClient @Inject constructor(
 
     override fun onKeyUp(keyCode: Int, e: KeyEvent): Boolean = false
 
-    override fun onLongPress(event: MotionEvent): Boolean = false
+    override fun onLongPress(event: MotionEvent): Boolean {
+        onLongPressListener?.invoke()
+        return true
+    }
 
     override fun readControlKey(): Boolean {
         val wasActive = controlActive

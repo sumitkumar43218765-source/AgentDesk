@@ -179,53 +179,67 @@ class EmbeddedShellBackend @Inject constructor(
         val shellEnv: Array<String>
         val cwd: String
 
-        val isProotReady = request.environment == ShellEnvironment.PROOT_UBUNTU &&
-                File(pathProvider.termuxPrefix, "bin/proot").exists() &&
-                pathProvider.rootfsDir.exists()
-
-        if (isProotReady) {
-            shellPath = File(pathProvider.termuxPrefix, "bin/proot").absolutePath
-            val prootCmd = commandBuilder.buildCommandLine(
-                ShellRequest(
-                    command = request.command ?: "/bin/bash -l",
-                    cwd = request.cwd ?: "/root",
-                    environment = ShellEnvironment.PROOT_UBUNTU,
-                    executionId = sessionId
-                )
-            )
-            shellArgs = prootCmd.drop(1).toTypedArray()
-            cwd = pathProvider.rootfsHome.absolutePath
-            shellEnv = arrayOf(
-                "HOME=/root",
-                "TERM=xterm-256color",
-                "COLORTERM=truecolor",
-                "LANG=C.UTF-8"
-            )
-        } else if (File(pathProvider.termuxPrefix, "bin/bash").exists()) {
-            shellPath = File(pathProvider.termuxPrefix, "bin/bash").absolutePath
-            shellArgs = if (request.command != null) arrayOf("-lc", request.command) else arrayOf("-l")
-            cwd = request.cwd?.let { pathProvider.guestToHost(it).absolutePath } ?: pathProvider.termuxHome.absolutePath
+        if (request.isFailsafe) {
+            // Termux Failsafe emergency recovery shell
+            shellPath = "/system/bin/sh"
+            shellArgs = arrayOf("-i")
+            cwd = pathProvider.termuxHome.absolutePath
             shellEnv = arrayOf(
                 "HOME=${pathProvider.termuxHome.absolutePath}",
-                "PREFIX=${pathProvider.termuxPrefix.absolutePath}",
-                "PATH=${pathProvider.termuxPrefix.absolutePath}/bin:${pathProvider.termuxPrefix.absolutePath}/bin/applets:/system/bin",
+                "PATH=/system/bin:/system/xbin",
                 "TERM=xterm-256color",
                 "COLORTERM=truecolor",
-                "LANG=en_US.UTF-8",
-                "TMPDIR=${pathProvider.tmpDir.absolutePath}"
+                "PS1=failsafe:\\w\\$ "
             )
         } else {
-            shellPath = "/system/bin/sh"
-            shellArgs = if (request.command != null) arrayOf("-c", request.command) else arrayOf("-i")
-            cwd = pathProvider.termuxHome.absolutePath
-            val path = "${pathProvider.termuxPrefix.absolutePath}/bin:/system/bin:/system/xbin"
-            shellEnv = arrayOf(
-                "HOME=${pathProvider.termuxHome.absolutePath}",
-                "PATH=$path",
-                "TERM=xterm-256color",
-                "COLORTERM=truecolor",
-                "PS1=agentdesk:\\w\\$ "
-            )
+            val isProotReady = request.environment == ShellEnvironment.PROOT_UBUNTU &&
+                    File(pathProvider.termuxPrefix, "bin/proot").exists() &&
+                    pathProvider.rootfsDir.exists()
+
+            if (isProotReady) {
+                shellPath = File(pathProvider.termuxPrefix, "bin/proot").absolutePath
+                val prootCmd = commandBuilder.buildCommandLine(
+                    ShellRequest(
+                        command = request.command ?: "/bin/bash -l",
+                        cwd = request.cwd ?: "/root",
+                        environment = ShellEnvironment.PROOT_UBUNTU,
+                        executionId = sessionId
+                    )
+                )
+                shellArgs = prootCmd.drop(1).toTypedArray()
+                cwd = pathProvider.rootfsHome.absolutePath
+                shellEnv = arrayOf(
+                    "HOME=/root",
+                    "TERM=xterm-256color",
+                    "COLORTERM=truecolor",
+                    "LANG=C.UTF-8"
+                )
+            } else if (File(pathProvider.termuxPrefix, "bin/bash").exists()) {
+                shellPath = File(pathProvider.termuxPrefix, "bin/bash").absolutePath
+                shellArgs = if (request.command != null) arrayOf("-lc", request.command) else arrayOf("-l")
+                cwd = request.cwd?.let { pathProvider.guestToHost(it).absolutePath } ?: pathProvider.termuxHome.absolutePath
+                shellEnv = arrayOf(
+                    "HOME=${pathProvider.termuxHome.absolutePath}",
+                    "PREFIX=${pathProvider.termuxPrefix.absolutePath}",
+                    "PATH=${pathProvider.termuxPrefix.absolutePath}/bin:${pathProvider.termuxPrefix.absolutePath}/bin/applets:/system/bin",
+                    "TERM=xterm-256color",
+                    "COLORTERM=truecolor",
+                    "LANG=en_US.UTF-8",
+                    "TMPDIR=${pathProvider.tmpDir.absolutePath}"
+                )
+            } else {
+                shellPath = "/system/bin/sh"
+                shellArgs = if (request.command != null) arrayOf("-c", request.command) else arrayOf("-i")
+                cwd = pathProvider.termuxHome.absolutePath
+                val path = "${pathProvider.termuxPrefix.absolutePath}/bin:/system/bin:/system/xbin"
+                shellEnv = arrayOf(
+                    "HOME=${pathProvider.termuxHome.absolutePath}",
+                    "PATH=$path",
+                    "TERM=xterm-256color",
+                    "COLORTERM=truecolor",
+                    "PS1=agentdesk:\\w\\$ "
+                )
+            }
         }
 
         var handle: TermuxSessionHandle? = null
