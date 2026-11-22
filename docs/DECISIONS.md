@@ -70,3 +70,13 @@
 - **Reason:** Fulfills PRD M1 requirement for genuine terminal emulation, ANSI escape color rendering, interactive CLI tools (nano, vim, bash, top), and direct keyboard input instead of simulated text entry.
 - **Date:** 2026-11-21
 
+## D016: Authentic Termux UI & Full Shell Integration
+- **Decision:** Implemented the full authentic Termux user interface matching upstream Termux specifications:
+  1. Left-sliding `TermuxDrawer` with running session list, visual indicators, rename dialog, close buttons, `+ NEW SESSION`, `FAILSAFE` recovery session (executing `/system/bin/sh` with safe recovery environment), and a toggle button for soft keyboard visibility.
+  2. Authentic 2-row `ExtraKeysBar` (ESC, /, -, HOME, UP, END, PGUP / TAB, CTRL, ALT, LEFT, DOWN, RIGHT, PGDN) with ANSI escape sequences and sticky modifier highlights.
+  3. Termux Context Menu dialog triggered on long-press with Select URL, Share Transcript, Reset Terminal, Kill Process, and Keep Screen On toggle.
+  4. Real `TermuxInstaller` handling ZIP extraction, `SYMLINKS.txt` parsing (`oldpath←newpath`), and 0700 binary permissions.
+- **Reason:** Fully satisfies user requirement for genuine Termux terminal and UI experience in AgentDesk.
+- **Date:** 2026-11-22
+
+
